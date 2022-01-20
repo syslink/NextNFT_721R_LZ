@@ -9,7 +9,7 @@ import ERC20Transfers from "components/ERC20Transfers";
 import DEX from "components/DEX";
 import NFTBalance from "components/NFTBalance";
 import Wallet from "components/Wallet";
-import { Layout, Tabs, Image } from "antd";
+import { Layout, Tabs, Image, Button } from "antd";
 import "antd/dist/antd.css";
 import NativeBalance from "components/NativeBalance";
 import "./style.css";
@@ -19,6 +19,8 @@ import Text from "antd/lib/typography/Text";
 import Ramper from "components/Ramper";
 import MenuItems from "./components/MenuItems";
 import vlogo from './asset/volcanic_logo.png';
+import peopleToken from './asset/abi/peopleToken.json';
+
 const { Header, Footer } = Layout;
 
 const styles = {
@@ -27,7 +29,7 @@ const styles = {
     justifyContent: "center",
     fontFamily: "Roboto, sans-serif",
     color: "#041836",
-    marginTop: "130px",
+    marginTop: "70px",
     padding: "10px",
   },
   header: {
@@ -52,13 +54,30 @@ const styles = {
   },
 };
 const App = ({ isServerInfo }) => {
-  const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading } = useMoralis();
+  const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading, account, web3 } = useMoralis();
 
   useEffect(() => {
     const connectorId = window.localStorage.getItem("connectorId");
     if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3({ provider: connectorId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isWeb3Enabled]);
+
+  const claimPeople = () => {
+    const peopleContract = new web3.eth.Contract(peopleToken.abi, peopleToken.address);
+    peopleContract.methods.mint().send({from: account})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('confirmation', function(confirmationNumber, receipt){
+      console.log(confirmationNumber, receipt);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+    });
+  }
 
   return (
     <Layout style={{ height: "100vh", overflow: "auto" }}>
@@ -67,6 +86,7 @@ const App = ({ isServerInfo }) => {
           <Image src={vlogo} alt=""/>
           <MenuItems />
           <div style={styles.headerRight}>
+            <Button type='primary' onClick={() => claimPeople()}>Claim $PEOPLE</Button>
             <Chains />
             {/* <TokenPrice
               address="0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"

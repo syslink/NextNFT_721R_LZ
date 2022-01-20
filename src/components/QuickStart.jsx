@@ -5,6 +5,7 @@ import BigNumber from "_bignumber.js@9.0.2@bignumber.js";
 import pic1 from '../asset/1.png';
 import pic2 from '../asset/2.png';
 import pic3 from '../asset/3.png';
+import peopleImg from '../asset/people.jpeg';
 
 import TangaNFTInfo from "../asset/abi/tangaNFT.json";
 
@@ -42,22 +43,17 @@ export default function QuickStart({ isServerInfo }) {
     const tangaNFTContract = new web3.eth.Contract(TangaNFTInfo.abi, TangaNFTInfo.address);
     //setTangaNFT(tangaNFTContract);
     tangaNFTContract.methods.getCurrentPriceToMint(1).call().then(mintPrice => {
-      setMintPrice(new BigNumber(mintPrice).shiftedBy(-18).shiftedBy(-9).toString());
+      setMintPrice(new BigNumber(mintPrice).shiftedBy(-18).toString());
     });
     tangaNFTContract.methods.getCurrentPriceToBurn(1).call().then(burnPrice => {
-      setBurnPrice(new BigNumber(burnPrice).shiftedBy(-18).shiftedBy(-9).toString());
+      setBurnPrice(new BigNumber(burnPrice).shiftedBy(-18).toString());
     });
   });
 
-  const buyTVA = () => {
-
-  }
-  const mintNFT = () => {
-  }
   return (
     <div style={{ display: "flex", gap: "10px" }}>
       <Card
-        style={{...styles.card, width: '60%'}}
+        style={{...styles.card, width: '65%'}}
         title={
           <>
             📝 <Text strong>About Tanga Volcanic</Text>
@@ -72,7 +68,7 @@ export default function QuickStart({ isServerInfo }) {
             </Text><p/>
             <Image src={pic1} style={{width: '300px', marginRight: '5px'}} alt=""/>
             <Image src={pic2} style={{width: '300px', marginRight: '5px'}} alt=""/>
-            <Image src={pic3} style={{width: '300px'}} alt=""/>
+            {/* <Image src={pic3} style={{width: '300px'}} alt=""/> */}
           </Timeline.Item>
 
           <Timeline.Item dot="💿">
@@ -110,39 +106,39 @@ export default function QuickStart({ isServerInfo }) {
           style={styles.card}
           title={
             <>
-              💣 <Text strong>Tanga Volcanic Ash Token(TVA)</Text><Button type='primary' onClick={() => buyTVA()}>Buy</Button>
+              (📜,📜) <Text strong>Constitution DAO Token($PEOPLE)</Text>
             </>
           }
         >
           <Timeline mode="left" style={styles.timeline}>
-            <Timeline.Item dot="💿">
+            <Timeline.Item dot="📜">
               <Text style={styles.text}>
-                Total issue volume of 1000 trillion{" "}
-                <a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/truffle">
-                  TVA
-                </a>
+              We tried to buy the Constitution in 7 days, raised $40M, onboarded thousands into crypto and educated millions.
               </Text>
             </Timeline.Item>
             <Timeline.Item dot="⚙️">
-              <Text style={styles.text}>
-              Developers account for 5%, 50 trillion{" "}
-              <a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/truffle">
-                TVA
+              <Text style={styles.text}> 
+              <a target="_blank" rel="noopener noreferrer" href="https://github.com/People-DAO/Audit-Reports">
+              Audit report
               </a>
+              {' '}for $PEOPLE and the entire @juiceboxETH-v1 contracts is live! No SECURITY ISSUES since{' '}
+              <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/ConstitutionDAO">
+              @ConstitutionDAO
+              </a>
+              {' '}renounced ownership. 
               </Text>
             </Timeline.Item>
             <Timeline.Item dot="📡">
               <Text style={styles.text}>
-                Fund account for 15%, 150 trillion{" "}
-                <a target="_blank" rel="noopener noreferrer" href="https://www.npmjs.com/package/truffle">
-                  TVA
-                </a>
+                $PEOPLE has been listed on Binance, OKx......
               </Text>
             </Timeline.Item>
             <Timeline.Item dot="✅" style={styles.text}>
               <Text>
-              The remainder, 800 trillion, will be issued by mining
+              For $PEOPLE, For Future!
               </Text>
+              <p/>
+              <Image src={peopleImg} style={{width: '200px'}} alt=""/>
             </Timeline.Item>
           </Timeline>
         </Card>
@@ -150,27 +146,27 @@ export default function QuickStart({ isServerInfo }) {
           style={{ marginTop: "10px", ...styles.card }}
           title={
             <>
-              📡 <Text strong> Tanga Volcanic NFT (TangaNFT)</Text><Button type='primary' onClick={() => mintNFT()}>Mint</Button>
+              (📜,🌋) <Text strong> Tanga Volcanic NFT (TangaNFT)</Text>
             </>
           }
         >
           <Timeline mode="left" style={styles.timeline}>
             <Timeline.Item dot="💿">
               <Text style={styles.text}>
-              Putting a certain amount of TVA into the pool can mint TangaNFT from the pool
+              Putting a certain amount of $PEOPLE into the [TangaNFT-$PEOPLE] pool can mint TangaNFT from the pool
               </Text>
             </Timeline.Item>
             <Timeline.Item dot="⚙️">
               <Text style={styles.text}>
-              Destroying TangaNFT to the pool can obtain a certain amount of TVA from the pool
+              Destroying TangaNFT to the pool can obtain a certain amount of $PEOPLE from the [TangaNFT-$PEOPLE] pool
               </Text>
             </Timeline.Item>
             <Timeline.Item dot="💾">
               <Text style={styles.text}>
-              The current minting of a TangaNFT requires the consumption of {MintPrice} Billion TVA
+              The current minting of one TangaNFT requires the consumption of {MintPrice} $PEOPLE
               </Text><p/>
               <Text style={styles.text}>
-              The current destroying of a TangaNFT can the obtain {BurnPrice} Billion TVA
+              The current destroying of one TangaNFT can the obtain {BurnPrice} $PEOPLE
               </Text>
             </Timeline.Item>
           </Timeline>
