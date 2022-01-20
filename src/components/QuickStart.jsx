@@ -8,8 +8,6 @@ import pic3 from '../asset/3.png';
 
 import TangaNFTInfo from "../asset/abi/tangaNFT.json";
 
-const TangaNFTContractAddr = '0xcDfa6102fdd07F5A978FD9A521AeFDdF685f3639';
-
 const { Text } = Typography;
 
 const styles = {
@@ -38,11 +36,11 @@ export default function QuickStart({ isServerInfo }) {
   const { Moralis } = useMoralis();
   const [ MintPrice, setMintPrice ] = useState(0);
   const [ BurnPrice, setBurnPrice ] = useState(0);
-  const [ TangaNFT, setTangaNFT ] = useState(null);
+  //const [ TangaNFT, setTangaNFT ] = useState(null);
 
   Moralis.Web3.enableWeb3().then(web3 => {
-    const tangaNFTContract = new web3.eth.Contract(TangaNFTInfo.abi, TangaNFTContractAddr);
-    setTangaNFT(tangaNFTContract);
+    const tangaNFTContract = new web3.eth.Contract(TangaNFTInfo.abi, TangaNFTInfo.address);
+    //setTangaNFT(tangaNFTContract);
     tangaNFTContract.methods.getCurrentPriceToMint(1).call().then(mintPrice => {
       setMintPrice(new BigNumber(mintPrice).shiftedBy(-18).shiftedBy(-9).toString());
     });

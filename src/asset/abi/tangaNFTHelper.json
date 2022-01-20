@@ -1,0 +1,90 @@
+{
+    "address": "0xbE2dFe28DA59De37a7002d351713287D505b1cB0",
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_tangaNFT",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_fromIndex",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_toIndex",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getTangaNFTInfos",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "tokenId",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "tokenURI",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "owner",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "mintPrice",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "message",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "followersNum",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "followerWeight",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct TangaNFTHelper.TangaNFTInfo[]",
+                    "name": "tangaNFTInfos",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "tangaNFT",
+            "outputs": [
+                {
+                    "internalType": "contract TangaNFT",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}
