@@ -6,6 +6,7 @@ import { getExplorer } from "helpers/networks";
 import AddressInput from "./AddressInput";
 import { useVerifyMetadata } from "hooks/useVerifyMetadata";
 
+const TangaNFTContractAddr = '0x44dCd12fF0A1D5C98d540D1EbeD79ED17170BcbF';
 const { Meta } = Card;
 
 const styles = {
@@ -23,6 +24,7 @@ const styles = {
 
 function NFTBalance() {
   const { data: NFTBalances } = useNFTBalances();
+  //const [NFTBalances, setNFTBalances] = useState(null);
   const { Moralis, chainId } = useMoralis();
   const [visible, setVisibility] = useState(false);
   const [receiverToSend, setReceiver] = useState(null);
@@ -30,7 +32,13 @@ function NFTBalance() {
   const [nftToSend, setNftToSend] = useState(null);
   const [isPending, setIsPending] = useState(false);
   const { verifyMetadata } = useVerifyMetadata();
-
+  
+  // if (NFTBalances == null) {
+  //   Moralis.Web3API.token.getAllTokenIds({address: TangaNFTContractAddr, chain: "ropsten" }).then(NFTs => {
+  //     //console.log("NFTs", NFTs);
+  //     setNFTBalances(NFTs);
+  //   })
+  // }
   async function transfer(nft, amount, receiver) {
     const options = {
       type: nft.contract_type,
@@ -67,13 +75,22 @@ function NFTBalance() {
   console.log("NFTBalances", NFTBalances);
   return (
     <div style={{ padding: "15px", maxWidth: "1030px", width: "100%" }}>
-      <h1>🖼 NFT Balances</h1>
+      <h1>🖼 My Tanga Volcanic NFTs</h1>
       <div style={styles.NFTs}>
         <Skeleton loading={!NFTBalances?.result}>
           {NFTBalances?.result &&
             NFTBalances.result.map((nft, index) => {
+              if (nft.token_address !== TangaNFTContractAddr.toLowerCase()) return '';
               //Verify Metadata
               nft = verifyMetadata(nft);
+              if (nft.image == null) {
+                if (nft.metadata != null) {
+                  nft.image = JSON.parse(nft.metadata).image;
+                } else if (nft.token_uri != null){
+                  const decodeData = atob(nft.token_uri.substr('data:image/svg+xml;base64,'.length));
+                  nft.image = JSON.parse(decodeData).image;
+                }
+              }
               return (
                 <Card
                   hoverable

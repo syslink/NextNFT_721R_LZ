@@ -83,6 +83,8 @@ const menuItems = [
   },
 ];
 
+const filterChains = {'0x3': true}
+
 function Chains() {
   const { switchNetwork, chainId, chain } = useChain();
   const { isAuthenticated } = useMoralis();
@@ -105,9 +107,10 @@ function Chains() {
   const menu = (
     <Menu onClick={handleMenuClick}>
       {menuItems.map((item) => (
+        filterChains[item.key] ?
         <Menu.Item key={item.key} icon={item.icon} style={styles.item}>
           <span style={{ marginLeft: "5px" }}>{item.value}</span>
-        </Menu.Item>
+        </Menu.Item> : ''
       ))}
     </Menu>
   );
