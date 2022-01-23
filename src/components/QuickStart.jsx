@@ -1,7 +1,7 @@
 import { Card, Timeline, Typography, Image, Button } from "antd";
 import React, { useState } from "react";
 import { useMoralis } from "react-moralis";
-import BigNumber from "_bignumber.js@9.0.2@bignumber.js";
+import BigNumber from "bignumber.js";
 import pic1 from '../asset/1.png';
 import pic2 from '../asset/2.png';
 import pic3 from '../asset/3.png';
