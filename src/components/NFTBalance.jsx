@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useMoralis } from "react-moralis";
-import { Card, Image, Tooltip, Modal, Input, Skeleton, Checkbox, Button } from "antd";
-import { FileSearchOutlined, SendOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { InputNumber, Card, Image, Comment, Tooltip, List, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Badge } from "antd";
+import { FileSearchOutlined, SendOutlined, SwapOutlined, EditOutlined } from "@ant-design/icons";
 import { getExplorer } from "helpers/networks";
+import { getEllipsisTxt } from "../helpers/formatters";
+import BigNumber from "_bignumber.js@9.0.2@bignumber.js";
 import AddressInput from "./AddressInput";
 import Address from "./Address/Address";
+import Blockies from "react-blockies";
 //import { useVerifyMetadata } from "hooks/useVerifyMetadata";
 import TangaNFTInfo from '../asset/abi/tangaNFT.json';
 import TangaNFTHelperInfo from '../asset/abi/tangaNFTHelper.json';
+import PeopleTokenInfo from '../asset/abi/peopleToken.json';
 
+const { Text, Title } = Typography;
 const { Meta } = Card;
+const { TextArea } = Input;
+const { Option } = Select;
 
 const styles = {
   NFTs: {
@@ -26,55 +33,138 @@ const styles = {
 
 function NFTBalance() {
   // const { data: NFTBalances } = useNFTBalances();
-  const { Moralis, chainId, account, web3 } = useMoralis();
+  const { Moralis, chainId, account } = useMoralis();
   const [visible, setVisibility] = useState(false);
+  const [bioVisible, setBioVisibility] = useState(false);
   const [mintVisible, setMintVisibility] = useState(false);
+  const [batchBurnVisible, setBatchBurnVisibility] = useState(false);
   const [receiverToSend, setReceiver] = useState(null);
   const [amountToSend, setAmount] = useState(null);
   const [nftToSend, setNftToSend] = useState(null);
   const [isPending, setIsPending] = useState(false);
-  const [NFTInfos, setNFTInfos] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [NFTInfos, setNFTInfos] = useState([]);
   const [onlyMe, setOnlyMe] = useState(false);
-  console.log('1');
+  const [approved, setApproved] = useState(false);
+  const [allowanced, setAllowanced] = useState(0);
+  const [nftMessage, setNFTMessage] = useState("");
+  const [mintAmount, setMintAmount] = useState(0);
+  const [mintPrice, setMintPrice] = useState(0);
+  const [burnPrice, setBurnPrice] = useState(0);
+  const [minting, setMinting] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [totalSupply, setTotalSupply] = useState(0);
+  const [tangaNFT, setTangaNFT] = useState(null);
+  const [tangaNFTHelper, setTangaNFTHelper] = useState(null);
+  const [peopleToken, setPeopleToken] = useState(null);
+  const [slippageTolerance, setSlippageTolerance] = useState(5);
+  const [selectedNFTs, setSelectedNFTs] = useState([]);
+  const [followedNFT, setFollowedNFT] = useState(0);
+  const [batchBurning, setBatchBurning] = useState(false);
+  const [messageVisible, setMessageVisibility] = useState(false);
+  const [leavedMessageVisible, setLeavedMessageVisibility] = useState(false);
+  const [bio, setBio] = useState(false);
+  const [leavedMessage, setLeavedMessage] = useState('');
+  const [bioPrice, setBioPrice] = useState(0);
+  const [messagePrice, setMessagePrice] = useState(0);
+  const [messageData, setMessageData] = useState([]);
+  const [web3Obj, setWeb3Obj] = useState(null);
+  
+  var myNFTs = [];
+  var otherNFTs = [];
+
   useEffect(() => {
-    console.log('get all nftInfos');
-    const tangaNFTHelper = new web3.eth.Contract(TangaNFTHelperInfo.abi, TangaNFTHelperInfo.address);
-    const tangaNFTContract = new web3.eth.Contract(TangaNFTInfo.abi, TangaNFTInfo.address);
+    const fetchData = () => {
+      Moralis.Web3.enableWeb3().then(async (web3) => {
+        setWeb3Obj(web3);
+        const peopleTokenContract= new web3.eth.Contract(PeopleTokenInfo.abi, PeopleTokenInfo.address);
+        const tangaNFTHelperContract = new web3.eth.Contract(TangaNFTHelperInfo.abi, TangaNFTHelperInfo.address);
+        const tangaNFTContract = new web3.eth.Contract(TangaNFTInfo.abi, TangaNFTInfo.address);
 
-    tangaNFTContract.methods.totalSupply().call().then(totalSupply => {
-      tangaNFTHelper.methods.getTangaNFTInfos(0, totalSupply).call().then(nftInfos => {
-        console.log(nftInfos);
-        setNFTInfos(nftInfos);        
-      });
-    });
-  }, [onlyMe]);
+        setPeopleToken(peopleTokenContract);
+        setTangaNFT(tangaNFTContract);
+        setTangaNFTHelper(tangaNFTHelperContract);
+        
+        tangaNFTContract.methods.totalSupply().call().then(nftNumber => {
+          setTotalSupply(nftNumber);
+          if (nftNumber > 0) {
+            tangaNFTHelperContract.methods.getTangaNFTInfos(0, nftNumber).call().then(nftInfos => {
+              console.log(nftInfos);
+              setIsLoading(false);
+              setNFTInfos(nftInfos);                   
+            });
+          } else {
+            setIsLoading(false);
+          }
+        });
 
-  const mintNFT = () => {
+        tangaNFTContract.methods.LeavedMessagePrice().call().then(messagePrice => {
+          setMessagePrice(messagePrice);
+        });
+
+        tangaNFTContract.methods.ChangeBioPrice().call().then(bioPrice => {
+          setBioPrice(bioPrice);
+        });
+        
+        if (account != null) {
+          peopleTokenContract.methods.allowance(account, TangaNFTInfo.address).call().then(allowancedAmount => {
+            setAllowanced(allowancedAmount);
+            if (new BigNumber(allowancedAmount).gt(new BigNumber(1000))) {
+              setApproved(true);
+            }
+          });
+        }
+      })
+    };
+    
+    fetchData();
+  }, [Moralis, account, totalSupply]);
+
+  const showMintNFTDialog = () => {
     setMintVisibility(true);
   }
 
-  async function transfer(nft, amount, receiver) {
-    const options = {
-      type: nft.contract_type,
-      tokenId: nft.token_id,
-      receiver: receiver,
-      contractAddress: nft.token_address,
-    };
+  const showBatchBurnDialog = () => {
+    setBatchBurnVisibility(true);
+    setFollowedNFT(0);
+  }
 
-    if (options.type === "erc1155") {
-      options.amount = amount;
-    }
+  async function transfer() {
+    const options = {
+      type: "erc721",
+      tokenId: parseInt(nftToSend.tokenId),
+      receiver: receiverToSend,
+      contractAddress: TangaNFTInfo.address,
+    };
 
     setIsPending(true);
     await Moralis.transfer(options)
       .then((tx) => {
         console.log(tx);
         setIsPending(false);
+        setVisibility(false)
       })
       .catch((e) => {
-        alert(e.message);
+        //alert(e.message);
         setIsPending(false);
       });
+  }
+
+  function sendNFTMessage(nft) {
+    setIsPending(true);
+    tangaNFT.methods.leaveMessage2NFT(nft.tokenId, leavedMessage).send({from: account})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+      setIsPending(false);
+      setMessageVisibility(false);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+      setIsPending(false);
+    });
   }
 
   const handleTransferClick = (nft) => {
@@ -82,38 +172,218 @@ function NFTBalance() {
     setVisibility(true);
   };
 
-  const handleChange = (e) => {
-    setAmount(e.target.value);
+  const handleModifyBioClick = (nft) => {
+    setNftToSend(nft);
+    setBioVisibility(true);
+  }
+
+  const sendMessage = (nft) => {
+    setNftToSend(nft);
+    setMessageVisibility(true);
+  }
+
+  const approvePeople = () => {
+    setApproving(true);
+    peopleToken.methods.approve(TangaNFTInfo.address, '0x' + new BigNumber(1).shiftedBy(25).toString(16)).send({from: account})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+      setApproved(receipt.status);
+      setApproving(false);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+      setApproving(false);
+    });
+  }
+
+  const mintAmountChange = (e) => {
+    if (e.target.value === "") return;
+    const value = parseInt(e.target.value);
+    setMintAmount(value);
+    tangaNFT.methods.getCurrentPriceToMint(value).call().then(mintPrice => {
+      setMintPrice(mintPrice);
+      if (new BigNumber(mintPrice).lt(new BigNumber(allowanced))) {
+        setApproved(true);
+      }
+    });
   };
+
+  function modifyBio(nft) {
+    setIsPending(true);
+    tangaNFT.methods.changeNFTBio(nft.tokenId, bio).send({from: account})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+      setIsPending(false);
+      setBioVisibility(false);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+      setIsPending(false);
+    });
+  }
+
+  function mintNFT() {
+    setIsPending(true);
+    tangaNFT.methods.getCurrentPriceToMint(1).call().then(mintPrice => {
+      tangaNFT.methods.mint(mintAmount, '0x' + new BigNumber(mintPrice).multipliedBy(new BigNumber(100 + slippageTolerance)).toString(16), nftMessage).send({from: account})
+      .on('transactionHash', function(hash){
+        console.log(hash);
+        var intervalID = setInterval(() =>
+          web3Obj.eth.getTransactionReceipt(hash).then(receipt => {
+            if (receipt != null) {
+              setTotalSupply(totalSupply + 1);
+              setIsPending(false);
+              setMintVisibility(false);
+              clearInterval(intervalID);
+            }
+          }, 3000));
+      })
+      .on('receipt', function(receipt){
+        console.log(receipt);
+        setTotalSupply(totalSupply + 1);
+        setIsPending(false);
+        setMintVisibility(false);
+      })
+      .on('error', function(error, receipt) { 
+        console.log(error, receipt);
+        setIsPending(false);
+      });
+    });
+  }
+
+  function batchBurnNFT() {
+    setBatchBurning(true);
+    if (followedNFT === 0) {
+      tangaNFT.methods.burn(selectedNFTs).send({from: account})
+        .on('transactionHash', function(hash){
+          console.log(hash);
+          var intervalID = setInterval(() =>
+            web3Obj.eth.getTransactionReceipt(hash).then(receipt => {
+              if (receipt != null) {
+                setBatchBurnVisibility(false);
+                setBatchBurning(false);
+                clearInterval(intervalID);
+              }
+            }, 3000));
+        })
+        .on('receipt', function(receipt){
+          console.log(receipt);
+          setBatchBurnVisibility(false);
+          setBatchBurning(false);
+        })
+        .on('error', function(error, receipt) { 
+          console.log(error, receipt);
+          setBatchBurning(false);
+        });
+    } else {
+      tangaNFT.methods.burnAndFollow(selectedNFTs, followedNFT).send({from: account})
+        .on('transactionHash', function(hash){
+          console.log(hash);
+          var intervalID = setInterval(() =>
+            web3Obj.eth.getTransactionReceipt(hash).then(receipt => {
+              if (receipt != null) {
+                setBatchBurnVisibility(false);
+                setBatchBurning(false);
+                clearInterval(intervalID);
+              }
+            }, 3000));
+        })
+        .on('receipt', function(receipt){
+          console.log(receipt);
+          setBatchBurnVisibility(false);
+          setBatchBurning(false);
+        })
+        .on('error', function(error, receipt) { 
+          console.log(error, receipt);
+          setBatchBurning(false);
+        });
+    }
+  }
+
+  const messageChange = (e) => {
+    setNFTMessage(e.target.value);
+  };
+
+  const selectNFTsChange = (nftIds) => {
+    setSelectedNFTs(nftIds);
+    tangaNFT.methods.getCurrentPriceToBurn(nftIds.length).call().then(burnPrice => {
+      setBurnPrice(burnPrice);
+    });
+  };
+
+  const selectFollowedNFTChange = (nftId) => {
+    setFollowedNFT(nftId);
+  }
+
+  const showMessages = (nftId) => {
+    setIsPending(true);
+    tangaNFTHelper.methods.getLeavedMessages(nftId).call().then(messages => {
+      console.log(messages);
+      setMessageData(messages);
+      setLeavedMessageVisibility(true);
+      setIsPending(false);                  
+    });
+  }
 
   return (
     <div style={{ padding: "15px", maxWidth: "1030px", width: "100%" }}>
       <h1>
         🖼 Tanga Volcanic NFTs{' '} 
-        <Checkbox onChange={e => setOnlyMe(e.target.checked)}>Only Me</Checkbox>
-        <Button type='primary' onClick={() => mintNFT()}>Mint</Button>
+        <Checkbox checked={onlyMe} onChange={e => setOnlyMe(e.target.checked)}>Only Me</Checkbox>
+        <Button type='primary' onClick={() => showMintNFTDialog()}>Mint NFT</Button>
+        <Button style={{marginLeft: '10px'}} type='primary' onClick={() => showBatchBurnDialog()}>Burn NFT</Button>
       </h1>
       <div style={styles.NFTs}>
-        <Skeleton loading={!NFTInfos}>
+        <Skeleton loading={isLoading}>
           {NFTInfos != null && NFTInfos.map((nft, index) => {
-              if (onlyMe && nft.owner.toLowerCase() !== account.toLowerCase()) return '';
+              const bMine = nft.owner.toLowerCase() === account.toLowerCase();
+              if (onlyMe && !bMine) return ''; 
               
+              if (bMine) {
+                myNFTs.push(<Option key={nft.tokenId}>#{nft.tokenId}, MintPrice: {new BigNumber(nft.mintPrice).shiftedBy(-18).toString()}, Followers: {nft.followerWeight}/{nft.followersNum}</Option>);
+              } else {
+                otherNFTs.push(<Option key={nft.tokenId}>#{nft.tokenId}, MintPrice: {new BigNumber(nft.mintPrice).shiftedBy(-18).toString()}, Weight/Followers: {new BigNumber(nft.followerWeight).shiftedBy(-21).toString()}/{nft.followersNum}</Option>);
+              }
+
               const tokenURI = JSON.parse(atob(nft.tokenURI.substr('data:application/json;base64,'.length)));
               return (
                 <Card
                   hoverable
-                  actions={[
-                    <Tooltip title="View On Blockexplorer">
-                      <FileSearchOutlined
-                        onClick={() => window.open(`${getExplorer(chainId)}address/${nft.token_address}`, "_blank")}
-                      />
+                  actions={bMine ? [
+                    <Tooltip title="Check Messages">
+                      <Badge size="small" count={nft.leavedMessageNum} color={bMine ? "red" : "orange"}>
+                        <FileSearchOutlined
+                          onClick={() => showMessages(nft.tokenId)}
+                        />
+                      </Badge>
                     </Tooltip>,
                     <Tooltip title="Transfer NFT">
-                      <SendOutlined onClick={() => handleTransferClick(nft)} />
+                      <SwapOutlined onClick={() => handleTransferClick(nft)}/>
                     </Tooltip>,
-                    <Tooltip title="Sell On OpenSea">
-                      <ShoppingCartOutlined onClick={() => alert("OPENSEA INTEGRATION COMING!")} />
+                    <Tooltip title="Send message To NFT">
+                      <SendOutlined onClick={() => sendMessage(nft)} />
                     </Tooltip>,
+                    <Tooltip title="Modify Bio">
+                      <EditOutlined onClick={() => handleModifyBioClick(nft)}/>
+                    </Tooltip>,
+                  ] : [
+                    <Tooltip title="Check Messages">
+                      <Badge size="small" count={nft.leavedMessageNum} color={bMine ? "red" : "orange"}>
+                        <FileSearchOutlined
+                          onClick={() => showMessages(nft.tokenId)}
+                        />
+                      </Badge>
+                    </Tooltip>,
+                    <Tooltip title="Send message To NFT">
+                      <SendOutlined onClick={() => sendMessage(nft)} />
+                    </Tooltip>, 
+                    "",
                   ]}
                   style={{ width: 300, border: "2px solid #e7eaf3" }}
                   cover={
@@ -127,37 +397,124 @@ function NFTBalance() {
                   }
                   key={index}
                 >
-                  <Meta title={tokenURI.name} description={<Address avatar='left' size={6} copyable style={{ fontSize: "20px" }}>{nft.owner}</Address>} />
+                  <Meta title={tokenURI.name} description={<Address avatar='left' size={6} copyable style={{ fontSize: "20px" }} address={nft.owner}/>} />
                 </Card>
               );
             })}
         </Skeleton>
       </div>
       <Modal
-        title={`Transfer ${nftToSend?.name || "NFT"}`}
-        visible={visible}
-        onCancel={() => setVisibility(false)}
-        onOk={() => transfer(nftToSend, amountToSend, receiverToSend)}
+        title={`${messageData.length} Messages`}
+        visible={leavedMessageVisible}
+        onCancel={() => setLeavedMessageVisibility(false)}
+        onOk={() => setLeavedMessageVisibility(false)}
         confirmLoading={isPending}
-        okText="Send"
       >
-        <AddressInput autoFocus placeholder="Receiver" onChange={setReceiver} />
-        {nftToSend && nftToSend.contract_type === "erc1155" && (
-          <Input placeholder="amount to send" onChange={(e) => handleChange(e)} />
-        )}
+        <List
+          className="comment-list"
+          itemLayout="horizontal"
+          dataSource={messageData}
+          renderItem={item => (
+            <li>
+              <Comment
+                //actions={item.actions}
+                author={getEllipsisTxt(item.sender)}
+                avatar={<Blockies seed={item.sender.toLowerCase()} className="identicon" size={7}/>}
+                content={item.message}
+                datetime={new Date(parseInt(item.time)*1000).toLocaleString()}
+              />
+            </li>
+          )}
+        />
       </Modal>
       <Modal
-        title={`Mint ${nftToSend?.name || "NFT"}`}
-        visible={mintVisible}
-        onCancel={() => setMintVisibility(false)}
-        onOk={() => transfer(nftToSend, amountToSend, receiverToSend)}
+        title={`Transfer ${TangaNFTInfo?.name || "NFT"}`}
+        visible={visible}
+        onCancel={() => setVisibility(false)}
+        onOk={() => transfer()}
         confirmLoading={isPending}
         okText="Send"
       >
         <AddressInput autoFocus placeholder="Receiver" onChange={setReceiver} />
-        {nftToSend && nftToSend.contract_type === "erc1155" && (
-          <Input placeholder="amount to send" onChange={(e) => handleChange(e)} />
-        )}
+      </Modal>
+      
+      <Modal
+        title={`Modify Bio of TangaNFT#${nftToSend?.tokenId || "NFT"}`}
+        visible={bioVisible}
+        onCancel={() => setBioVisibility(false)}
+        confirmLoading={isPending}
+        footer={[
+          <Button type='primary' loading={approving} onClick={approved ? () => setBioVisibility(false) : () => approvePeople()}>{approved ? 'Cancel' : 'Approve ' + PeopleTokenInfo.name.toUpperCase()}</Button>,
+          <Button type='primary' loading={isPending} disabled={!approved} onClick={() => modifyBio(nftToSend)}>Modify Bio</Button>
+        ]}
+      >
+        <Input autoFocus placeholder="<= 50 bytes" onChange={(e) => setBio(e.target.value)} />    
+        <Text>Modify Bio will spend you {new BigNumber(bioPrice).shiftedBy(-18).toString()} $PEOPLE which will be tranferred to Dead address.</Text>    
+      </Modal>
+
+      <Modal
+        title={`Send Message To TangaNFT#${nftToSend?.tokenId || "NFT"}`}
+        visible={messageVisible}
+        onCancel={() => setMessageVisibility(false)}
+        confirmLoading={isPending}
+        footer={[
+          <Button type='primary' loading={approving} onClick={approved ? () => setMessageVisibility(false) : () => approvePeople()}>{approved ? 'Cancel' : 'Approve ' + PeopleTokenInfo.name.toUpperCase()}</Button>,
+          <Button type='primary' loading={isPending} disabled={!approved} onClick={() => sendNFTMessage(nftToSend)}>Send Message</Button>
+        ]}
+      >
+        <TextArea autoFocus showCount maxLength='50' placeholder="<= 200 bytes" onChange={(e) => setLeavedMessage(e.target.value)} />    
+        <Text>Send one message will spend you {new BigNumber(messagePrice).shiftedBy(-18).toString()} $PEOPLE which will be tranferred to Dead address.</Text>    
+      </Modal>
+
+      <Modal
+        title={`Mint ${TangaNFTInfo?.name || "NFT"}`}
+        visible={mintVisible}
+        onCancel={() => setMintVisibility(false)}
+        confirmLoading={isPending}
+        footer={[
+          <Button type='primary' loading={approving} onClick={approved ? () => setMintVisibility(false) : () => approvePeople()}>{approved ? 'Cancel' : 'Approve ' + PeopleTokenInfo.name.toUpperCase()}</Button>,
+          <Button type='primary' loading={isPending} disabled={!approved} onClick={() => mintNFT()}>Mint NFT</Button>
+        ]}
+      >
+        <Input style={{marginBottom: '10px'}} placeholder="amount to mint" onChange={(e) => mintAmountChange(e)}/>
+        <TextArea showCount style={{marginBottom: '10px'}} placeholder="bio of NFT, <= 50 bytes" onChange={(e) => messageChange(e)} maxLength='50' defaultValue={nftMessage}/>
+        <div style={{width: '100%', marginBottom: '10px'}}>
+          <Text>Slippage tolerance: </Text>
+          <InputNumber style={{width: '100px'}} min={0} max={100} defaultValue={slippageTolerance}  onChange={(v) => setSlippageTolerance(v)} addonAfter="%"/>
+        </div>
+        <Text>The mint price is: {new BigNumber(mintPrice).shiftedBy(-18).toString()} $PEOPLE</Text>
+      </Modal>
+      <Modal
+        title={`Burn ${TangaNFTInfo?.name || "NFT"}`}
+        visible={batchBurnVisible}
+        onCancel={() => setBatchBurnVisibility(false)}
+        confirmLoading={isPending}
+        footer={[
+          <Button type='primary' loading={batchBurning} onClick={() => batchBurnNFT()}>Burn</Button>
+        ]}
+      >
+        <Title level={5}>NFTs you wanna burn:</Title>
+        <Select
+          mode="multiple"
+          allowClear
+          style={{ width: '100%' }}
+          placeholder="Please select burned NFT IDs"
+          onChange={selectNFTsChange}
+        >
+          {myNFTs}
+        </Select>
+        <Text>Burn {selectedNFTs.length} NFTs, you can retrieve {new BigNumber(burnPrice).shiftedBy(-18).toString()} $PEOPLE</Text>
+        
+        <Title level={5}>NFT you want to follow (Optional):</Title>
+        <Select
+          style={{width: '100%'}}
+          allowClear
+          placeholder="Optional, please select the followed NFT ID"
+          onChange={selectFollowedNFTChange}
+        >
+          {otherNFTs}
+        </Select>
+        <Text>When select to follow another NFT, your social weight will be added to the NFT.</Text>
       </Modal>
     </div>
   );

@@ -1,11 +1,12 @@
 {
-	"address": "0xcD7a02e76E2dfDf51f18172f61Bc7F052969DEBf",
+	"address": "0x1107ddB0091e5696Fa4c4CFE085DAC17f2cAB953",
+	"name": "TangaNFT",
     "abi": [
 		{
 			"inputs": [
 				{
 					"internalType": "address",
-					"name": "_tangaToken",
+					"name": "_peopleToken",
 					"type": "address"
 				}
 			],
@@ -182,11 +183,11 @@
 				},
 				{
 					"internalType": "string",
-					"name": "_message",
+					"name": "_bio",
 					"type": "string"
 				}
 			],
-			"name": "changeNFTMessage",
+			"name": "changeNFTBio",
 			"outputs": [],
 			"stateMutability": "nonpayable",
 			"type": "function"
@@ -285,7 +286,7 @@
 					"type": "string"
 				}
 			],
-			"name": "NFTMessageChanged",
+			"name": "NFTBioChanged",
 			"type": "event"
 		},
 		{
@@ -302,6 +303,12 @@
 					"internalType": "string",
 					"name": "message",
 					"type": "string"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "time",
+					"type": "uint256"
 				}
 			],
 			"name": "NFTMessageLeaved",
@@ -497,7 +504,7 @@
 		},
 		{
 			"inputs": [],
-			"name": "ChangeMessagePrice",
+			"name": "ChangeBioPrice",
 			"outputs": [
 				{
 					"internalType": "uint256",
@@ -675,7 +682,7 @@
 			"inputs": [
 				{
 					"internalType": "uint256",
-					"name": "_nubmer",
+					"name": "_number",
 					"type": "uint256"
 				}
 			],
@@ -713,7 +720,7 @@
 			"inputs": [
 				{
 					"internalType": "uint256",
-					"name": "_nubmer",
+					"name": "_number",
 					"type": "uint256"
 				}
 			],
@@ -732,7 +739,7 @@
 			"inputs": [
 				{
 					"internalType": "uint256",
-					"name": "_nubmer",
+					"name": "_number",
 					"type": "uint256"
 				}
 			],
@@ -751,7 +758,7 @@
 			"inputs": [
 				{
 					"internalType": "uint256",
-					"name": "_nubmer",
+					"name": "_number",
 					"type": "uint256"
 				}
 			],
@@ -850,6 +857,25 @@
 					"type": "uint256"
 				}
 			],
+			"name": "nftBioMap",
+			"outputs": [
+				{
+					"internalType": "string",
+					"name": "",
+					"type": "string"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
 			"name": "nftFollowedWeightMap",
 			"outputs": [
 				{
@@ -885,25 +911,11 @@
 					"internalType": "string",
 					"name": "message",
 					"type": "string"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
+				},
 				{
 					"internalType": "uint256",
-					"name": "",
+					"name": "time",
 					"type": "uint256"
-				}
-			],
-			"name": "nftMessageMap",
-			"outputs": [
-				{
-					"internalType": "string",
-					"name": "",
-					"type": "string"
 				}
 			],
 			"stateMutability": "view",
@@ -962,6 +974,19 @@
 		},
 		{
 			"inputs": [],
+			"name": "peopleToken",
+			"outputs": [
+				{
+					"internalType": "contract IERC20",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
 			"name": "reserve",
 			"outputs": [
 				{
@@ -981,7 +1006,7 @@
 					"type": "address"
 				}
 			],
-			"name": "somebodyBurnTVAMap",
+			"name": "somebodyBurnPeopleMap",
 			"outputs": [
 				{
 					"internalType": "uint256",
@@ -1000,7 +1025,7 @@
 					"type": "address"
 				}
 			],
-			"name": "somebodyReleaseTVAMap",
+			"name": "somebodyReleasePeopleMap",
 			"outputs": [
 				{
 					"internalType": "uint256",
@@ -1038,19 +1063,6 @@
 					"internalType": "string",
 					"name": "",
 					"type": "string"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [],
-			"name": "tangaToken",
-			"outputs": [
-				{
-					"internalType": "contract IERC20",
-					"name": "",
-					"type": "address"
 				}
 			],
 			"stateMutability": "view",

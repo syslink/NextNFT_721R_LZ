@@ -83,7 +83,7 @@ const menuItems = [
   },
 ];
 
-const filterChains = {'0x3': true}
+const filterChains = {'0x5': true}
 
 function Chains() {
   const { switchNetwork, chainId, chain } = useChain();

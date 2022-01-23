@@ -1,5 +1,6 @@
 {
 	"address": "0xD66687193430963Fe24C3F1F21823e9fEa4fC076",
+    "name": "People",
     "abi": [
         {
             "inputs": [],

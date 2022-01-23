@@ -9,7 +9,7 @@ import ERC20Transfers from "components/ERC20Transfers";
 import DEX from "components/DEX";
 import NFTBalance from "components/NFTBalance";
 import Wallet from "components/Wallet";
-import { Layout, Tabs, Image, Button } from "antd";
+import { Layout, Tabs, Image, Button, message, Modal } from "antd";
 import "antd/dist/antd.css";
 import NativeBalance from "components/NativeBalance";
 import "./style.css";
@@ -54,7 +54,7 @@ const styles = {
   },
 };
 const App = ({ isServerInfo }) => {
-  const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading, account, web3 } = useMoralis();
+  const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading, account, web3, chainId } = useMoralis();
 
   useEffect(() => {
     const connectorId = window.localStorage.getItem("connectorId");
@@ -79,6 +79,20 @@ const App = ({ isServerInfo }) => {
     });
   }
 
+  const donate = () => {    
+    Modal.info({
+      title: 'Donation Information',
+      content: (
+        <div>
+          <p>Eth Address: 0x19b0D52438eDF115C386aD78ef2C12BD40009e17</p><p/>
+          <p>When the donation amount reaches 2 ETH, we will launch this DAPP to the mainnet of ethereum.</p>
+        </div>
+      ),
+      onOk() {},
+      width: 500
+    });
+  }
+
   return (
     <Layout style={{ height: "100vh", overflow: "auto" }}>
       <Router>
@@ -86,6 +100,7 @@ const App = ({ isServerInfo }) => {
           <Image src={vlogo} alt=""/>
           <MenuItems />
           <div style={styles.headerRight}>
+            <Button type='primary' style={{backgroundColor: 'green'}}onClick={() => donate()}>Donate</Button>
             <Button type='primary' onClick={() => claimPeople()}>Claim $PEOPLE</Button>
             <Chains />
             {/* <TokenPrice

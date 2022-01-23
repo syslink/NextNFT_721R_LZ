@@ -1,5 +1,5 @@
 {
-    "address": "0x05c168ED7B6d2e5728673290ae3A30Be3c83fdcc",
+    "address": "0x683bDC1BC259A5ecfbE4Ef3A271E388caa06a2e9",
     "abi": [
         {
             "inputs": [
@@ -11,6 +11,94 @@
             ],
             "stateMutability": "nonpayable",
             "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "previousOwner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "inputs": [],
+            "name": "renounceOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_tangaNFT",
+                    "type": "address"
+                }
+            ],
+            "name": "setTangaNFT",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_tokenId",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getLeavedMessages",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "address",
+                            "name": "sender",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "message",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "time",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct TangaNFTHelper.LeavedMessage[]",
+                    "name": "messages",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
         },
         {
             "inputs": [
@@ -51,7 +139,7 @@
                         },
                         {
                             "internalType": "string",
-                            "name": "message",
+                            "name": "bio",
                             "type": "string"
                         },
                         {
@@ -63,11 +151,29 @@
                             "internalType": "uint256",
                             "name": "followerWeight",
                             "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "leavedMessageNum",
+                            "type": "uint256"
                         }
                     ],
                     "internalType": "struct TangaNFTHelper.TangaNFTInfo[]",
                     "name": "tangaNFTInfos",
                     "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
                 }
             ],
             "stateMutability": "view",
