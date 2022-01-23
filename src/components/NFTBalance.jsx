@@ -4,7 +4,7 @@ import { InputNumber, Card, Image, Comment, Tooltip, List, Modal, Input, Skeleto
 import { FileSearchOutlined, SendOutlined, SwapOutlined, EditOutlined } from "@ant-design/icons";
 import { getExplorer } from "helpers/networks";
 import { getEllipsisTxt } from "../helpers/formatters";
-import BigNumber from "_bignumber.js@9.0.2@bignumber.js";
+import BigNumber from "bignumber.js";
 import AddressInput from "./AddressInput";
 import Address from "./Address/Address";
 import Blockies from "react-blockies";

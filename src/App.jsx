@@ -101,7 +101,8 @@ const App = ({ isServerInfo }) => {
           <MenuItems />
           <div style={styles.headerRight}>
             <Button type='primary' style={{backgroundColor: 'green'}}onClick={() => donate()}>Donate</Button>
-            <Button type='primary' onClick={() => claimPeople()}>Claim $PEOPLE</Button>
+            <Button type='primary' onClick={() => claimPeople()}>Claim PEOPLE</Button>
+            <Button type='primary' onClick={() => window.open('https://faucets.chain.link/goerli', "_blank")}>Claim ETH</Button>
             <Chains />
             {/* <TokenPrice
               address="0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"

@@ -177,7 +177,8 @@ contract TangaNFT is ERC721Enumerable, Ownable {
 
     function burn(uint256[] memory _tokenIds) public {
         require(msg.sender == tx.origin, "TangaNFT: only EOA");
-        
+        require(_tokenIds.length > 0, "TangaNFT: NO tokenId");
+
         uint256 burnPrice = getCurrentPriceToBurn(_tokenIds.length);
         
         // checks if allowed to burn
@@ -200,8 +201,9 @@ contract TangaNFT is ERC721Enumerable, Ownable {
         
         uint256 totalAddedWeight;
         for (uint256 i = 0; i < _myNFTs.length; i++) {
-            nftFollowedWeightMap[_peerNFT] = nftFollowedWeightMap[_myNFTs[i]].add(nftPriceMap[_myNFTs[i]]);
+            totalAddedWeight = totalAddedWeight.add(nftFollowedWeightMap[_myNFTs[i]].add(nftPriceMap[_myNFTs[i]]));
         }
+        nftFollowedWeightMap[_peerNFT] = nftFollowedWeightMap[_peerNFT].add(totalAddedWeight);
 
         if (!nftFollowedUserMap[_peerNFT].contains(msg.sender)) {
             nftFollowedUserMap[_peerNFT].add(msg.sender);
