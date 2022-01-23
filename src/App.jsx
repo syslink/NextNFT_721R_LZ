@@ -97,7 +97,8 @@ const App = ({ isServerInfo }) => {
     <Layout style={{ height: "100vh", overflow: "auto" }}>
       <Router>
         <Header style={styles.header}>
-          <Image src={vlogo} alt=""/>
+          <div style={{fontSize: "30px"}}>📜,</div>
+          <div style={{fontSize: "30px"}}>🌋</div>
           <MenuItems />
           <div style={styles.headerRight}>
             <Button type='primary' style={{backgroundColor: 'green'}}onClick={() => donate()}>Donate</Button>
