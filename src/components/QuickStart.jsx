@@ -135,7 +135,11 @@ export default function QuickStart({ isServerInfo }) {
             </Timeline.Item>
             <Timeline.Item dot="✅" style={styles.text}>
               <Text>
-              For $PEOPLE, For Future!
+              The fees for the transaction will be transferred to the fund address. 
+              </Text>
+              <Text strong>
+              About the fund, 20% is set aside for developers and the remaining 80% can be given to people in the world who have suffered because of the eruption, 
+              and we can make decisions by way of DAO.
               </Text>
               <p/>
               <Image src={peopleImg} style={{width: '200px'}} alt=""/>

@@ -35,6 +35,7 @@ function NFTBalance() {
   // const { data: NFTBalances } = useNFTBalances();
   const { Moralis, chainId, account } = useMoralis();
   const [visible, setVisibility] = useState(false);
+  const [ruleVisible, setRuleVisibility] = useState(false);
   const [bioVisible, setBioVisibility] = useState(false);
   const [mintVisible, setMintVisibility] = useState(false);
   const [batchBurnVisible, setBatchBurnVisibility] = useState(false);
@@ -127,6 +128,10 @@ function NFTBalance() {
   const showBatchBurnDialog = () => {
     setBatchBurnVisibility(true);
     setFollowedNFT(0);
+  }
+
+  const showRuleOfMintBurn = () => {
+    setRuleVisibility(true);
   }
 
   async function transfer() {
@@ -338,6 +343,7 @@ function NFTBalance() {
         <Checkbox checked={onlyMe} onChange={e => setOnlyMe(e.target.checked)}>Only Me</Checkbox>
         <Button type='primary' onClick={() => showMintNFTDialog()}>Mint NFT</Button>
         <Button style={{marginLeft: '10px'}} type='primary' onClick={() => showBatchBurnDialog()}>Burn NFT</Button>
+        <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Mint/Burn</Button>
       </h1>
       <div style={styles.NFTs}>
         <Skeleton loading={isLoading}>
@@ -438,6 +444,21 @@ function NFTBalance() {
         <AddressInput autoFocus placeholder="Receiver" onChange={setReceiver} />
       </Modal>
       
+      <Modal
+        title="Rule of Mint/Burn"
+        visible={ruleVisible}
+        onCancel={() => setRuleVisibility(false)}
+        onOk={() => setRuleVisibility(false)}
+        confirmLoading={isPending}
+        width='600px'
+      >
+        <Text>If current the total supply of TangaNFT is N, you wanna:</Text><p/>   
+        <Text>1) mint one NFT, will cost <Text strong>1000*(N+1)</Text> PEOPLE</Text><p/>
+        <Text>2) burn one NFT, will retrieve <Text strong>1000*N</Text> PEOPLE</Text> <p/>  
+        <Text>3) mint M NFT, will cost <Text strong>[1000*(N+1) + 1000*(N+2) + ... + 1000*(N+M)]</Text> PEOPLE</Text><p/>
+        <Text>4) burn M NFT, will retrieve <Text strong>[1000*N + 1000*(N - 1) + 1000*(N - M)]</Text> PEOPLE</Text> <p/>  
+      </Modal>
+
       <Modal
         title={`Modify Bio of TangaNFT#${nftToSend?.tokenId || "NFT"}`}
         visible={bioVisible}
