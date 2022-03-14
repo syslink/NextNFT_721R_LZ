@@ -369,7 +369,7 @@ function NFTBalance() {
       <div style={styles.NFTs}>
         <Skeleton loading={isLoading}>
           {AllNFTInfos != null && AllNFTInfos.map((nft, index) => {
-              const bMine = nft.owner_of.toLowerCase() === account.toLowerCase();
+              const bMine = account != null && nft.owner_of.toLowerCase() === account.toLowerCase();
               if (onlyMe && !bMine) return ''; 
               
               return (
