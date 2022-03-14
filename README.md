@@ -9,7 +9,7 @@ git clone https://github.com/bobo-metaverse/NextNFT.git
 💿 Install all dependencies:
 ```sh
 cd NextNFT
-yarn install 
+npm install 
 ```
 
 🚴‍♂️ Run your App:
