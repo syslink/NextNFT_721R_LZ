@@ -102,7 +102,7 @@ function NFTBalance() {
     "Ukraine": true
   }
   var OriginalNFTs = [<Option key='0x276C9Db99c4155aA91Bd4535468629cAC1875098'>MFER[0x276C9Db99c4155aA91Bd4535468629cAC1875098]</Option>,
-                  <Option key='0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af'>InvisibleFriend[0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af]</Option>,
+                  <Option key='0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af'>Ghost[0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af]</Option>,
                   <Option key='0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3'>BAYC[0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3]</Option>,
                   <Option key='0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0'>CryptoPunk[0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0]</Option>];
   var Words = [<Option key='Stop War'>Free word: Stop War</Option>,
@@ -408,30 +408,7 @@ function NFTBalance() {
             })}
         </Skeleton>
       </div>
-      <Modal
-        title={`${messageData.length} Messages`}
-        visible={leavedMessageVisible}
-        onCancel={() => setLeavedMessageVisibility(false)}
-        onOk={() => setLeavedMessageVisibility(false)}
-        confirmLoading={isPending}
-      >
-        <List
-          className="comment-list"
-          itemLayout="horizontal"
-          dataSource={messageData}
-          renderItem={item => (
-            <li>
-              <Comment
-                //actions={item.actions}
-                author={getEllipsisTxt(item.sender)}
-                avatar={<Blockies seed={item.sender.toLowerCase()} className="identicon" size={7}/>}
-                content={item.message}
-                datetime={new Date(parseInt(item.time)*1000).toLocaleString()}
-              />
-            </li>
-          )}
-        />
-      </Modal>
+      
       <Modal
         title={`Transfer ${NextNFTInfo?.name || "NFT"}`}
         visible={visible}
