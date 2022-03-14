@@ -137,6 +137,15 @@ function NextDAO() {
   }
 
   const vote = () => {
+    const now = new Date().getTime() / 1000;
+    if (now < startTime) {
+      message.warning('Voting has not yet started.');
+      return;
+    }
+    if (now > endTime) {
+      message.warning('Voting has been closed.');
+      return;
+    }
     nextDAO.methods.vote2NFT(selectedNFT.token_id, electedNFT.token_address).send({from: account})
       .on('transactionHash', function(hash){
         console.log(hash);
