@@ -19,7 +19,7 @@ import Contract from "components/Contract/Contract";
 import Text from "antd/lib/typography/Text";
 import Ramper from "components/Ramper";
 import MenuItems from "./components/MenuItems";
-import next_logo from './asset/next_logo.png';
+import robot from './asset/robot.png';
 import mintAll from './asset/abi/mintAll.json';
 
 const { Header, Footer } = Layout;
@@ -54,11 +54,17 @@ const styles = {
     fontWeight: "600",
   },
   logo: {
-    width: '200px',
-    fontSize: "40px",
+    display: "flex",
+    flexDirection: 'row',
+    alignItems: "center",
+    width: '300px',
+    fontSize: "30px",
     textShadow: "5px 5px 5px black, 0px 0px 2px black",
     color: "white",
     fontStyle: "italic"
+  },
+  robot: {
+    height: '40px',
   }
 };
 const App = ({ isServerInfo }) => {
@@ -106,7 +112,7 @@ const App = ({ isServerInfo }) => {
       <Router>
         <Header style={styles.header}>
           <div style={styles.logo}>
-            NEXT
+            <Image style={styles.robot} src={robot} />NEXT
           </div>
           <MenuItems />
           <div style={styles.headerRight}>
