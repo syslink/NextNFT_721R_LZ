@@ -78,7 +78,7 @@ function Account() {
                 key={key}
                 onClick={async () => {
                   try {
-                    await authenticate({ provider: connectorId, signingMessage: 'TangaNFT for PEOPLE' });
+                    await authenticate({ provider: connectorId, signingMessage: 'NextNFT' });
                     window.localStorage.setItem("connectorId", connectorId);
                     setIsAuthModalVisible(false);
                   } catch (e) {

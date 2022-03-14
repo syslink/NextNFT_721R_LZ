@@ -7,7 +7,8 @@ import Chains from "components/Chains";
 import ERC20Balance from "components/ERC20Balance";
 import ERC20Transfers from "components/ERC20Transfers";
 import DEX from "components/DEX";
-import NFTBalance from "components/NFTBalance";
+import NextNFT from "components/NextNFT";
+import NextDAO from "components/NextDAO";
 import Wallet from "components/Wallet";
 import { Layout, Tabs, Image, Button, message, Modal } from "antd";
 import "antd/dist/antd.css";
@@ -18,8 +19,8 @@ import Contract from "components/Contract/Contract";
 import Text from "antd/lib/typography/Text";
 import Ramper from "components/Ramper";
 import MenuItems from "./components/MenuItems";
-import vlogo from './asset/volcanic_logo.png';
-import peopleToken from './asset/abi/peopleToken.json';
+import next_logo from './asset/next_logo.png';
+import mintAll from './asset/abi/mintAll.json';
 
 const { Header, Footer } = Layout;
 
@@ -52,6 +53,13 @@ const styles = {
     fontSize: "15px",
     fontWeight: "600",
   },
+  logo: {
+    width: '200px',
+    fontSize: "40px",
+    textShadow: "5px 5px 5px black, 0px 0px 2px black",
+    color: "white",
+    fontStyle: "italic"
+  }
 };
 const App = ({ isServerInfo }) => {
   const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading, account, web3, chainId } = useMoralis();
@@ -62,9 +70,9 @@ const App = ({ isServerInfo }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isWeb3Enabled]);
 
-  const claimPeople = () => {
-    const peopleContract = new web3.eth.Contract(peopleToken.abi, peopleToken.address);
-    peopleContract.methods.mint().send({from: account})
+  const claimNFT = () => {
+    const mintAllContract = new web3.eth.Contract(mintAll.abi, mintAll.address);
+    mintAllContract.methods.mint().send({from: account})
     .on('transactionHash', function(hash){
       console.log(hash);
     })
@@ -97,13 +105,12 @@ const App = ({ isServerInfo }) => {
     <Layout style={{ height: "100vh", overflow: "auto" }}>
       <Router>
         <Header style={styles.header}>
-          <div style={{fontSize: "30px"}}>📜,</div>
-          <div style={{fontSize: "30px"}}>🌋</div>
+          <div style={styles.logo}>
+            NEXT
+          </div>
           <MenuItems />
           <div style={styles.headerRight}>
-            <Button type='primary' style={{backgroundColor: 'green'}}onClick={() => donate()}>Donate</Button>
-            <Button type='primary' onClick={() => claimPeople()}>Claim PEOPLE</Button>
-            <Button type='primary' onClick={() => window.open('https://faucets.chain.link/goerli', "_blank")}>Claim ETH</Button>
+            <Button type='primary' onClick={() => claimNFT()}>Claim NFTs for testing</Button>
             <Chains />
             {/* <TokenPrice
               address="0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
@@ -146,14 +153,17 @@ const App = ({ isServerInfo }) => {
             <Route path="/erc20transfers">
               <ERC20Transfers />
             </Route>
-            <Route path="/nftBalance">
-              <NFTBalance />
+            <Route path="/nextNFT">
+              <NextNFT />
+            </Route>
+            <Route path="/nextDAO">
+              <NextDAO />
             </Route>
             <Route path="/contract">
               <Contract />
             </Route>
             <Route path="/">
-              <Redirect to="/quickstart" />
+              <Redirect to="/nextNFT" />
             </Route>
             <Route path="/ethereum-boilerplate">
               <Redirect to="/quickstart" />
@@ -165,12 +175,12 @@ const App = ({ isServerInfo }) => {
         </div>
       </Router>
       <Footer style={{ textAlign: "center" }}>
-        <Text style={{ display: "block" }}>
+        {/* <Text style={{ display: "block" }}>
           ⭐️ Please join us{" "}
-          <a href="https://discord.gg/NSaMDM8k" target="_blank" rel="noopener noreferrer">
+          <a href="https://discord.gg/XZ9JyRGe" target="_blank" rel="noopener noreferrer">
             Discord
           </a>
-        </Text>
+        </Text> */}
       </Footer>
     </Layout>
   );

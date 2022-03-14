@@ -1,0 +1,73 @@
+{
+	"address": "0x7cc3fAf2918FA569a3282B10731fF41A2B21B26e",
+	"name": "MintAll",
+    "abi": [
+        {
+            "inputs": [],
+            "name": "mint",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "contract IMintableNFT",
+                    "name": "_boredApe",
+                    "type": "address"
+                },
+                {
+                    "internalType": "contract IMintableNFT",
+                    "name": "_ghost",
+                    "type": "address"
+                },
+                {
+                    "internalType": "contract IMintableNFT",
+                    "name": "_mfer",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [],
+            "name": "boredApe",
+            "outputs": [
+                {
+                    "internalType": "contract IMintableNFT",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "ghost",
+            "outputs": [
+                {
+                    "internalType": "contract IMintableNFT",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "mfer",
+            "outputs": [
+                {
+                    "internalType": "contract IMintableNFT",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}

@@ -18,11 +18,14 @@ function MenuItems() {
       }}
       defaultSelectedKeys={[pathname]}
     >
-      <Menu.Item key="/quickstart">
+      {/* <Menu.Item key="/quickstart">
         <NavLink to="/quickstart">(📜,🌋) Tanga PEOPLE</NavLink>
+      </Menu.Item> */}
+      <Menu.Item key="/nextNFT">
+        <NavLink to="/nextNFT">Next</NavLink>
       </Menu.Item>
-      <Menu.Item key="/nftBalance">
-        <NavLink to="/nftBalance">🖼 NFTs</NavLink>
+      <Menu.Item key="/nextDAO">
+        <NavLink to="/nextDAO">DAO Next</NavLink>
       </Menu.Item>
       {/* <Menu.Item key="/wallet">
         <NavLink to="/wallet">👛 Wallet</NavLink>
