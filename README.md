@@ -1,18 +1,18 @@
-# `tangaNFT-frontend`
+# `NextNFT`
 
 # 🚀 Quick Start
 
-📄 Clone or fork `tangaNFT-frontend`:
+📄 Clone or fork `NextNFT`:
 ```sh
-git clone https://github.com/TangaNFT/frontend.git
+git clone https://github.com/bobo-metaverse/NextNFT.git
 ```
 💿 Install all dependencies:
 ```sh
-cd frontend
+cd NextNFT
 yarn install 
 ```
 
 🚴‍♂️ Run your App:
 ```sh
-yarn start
+npm run start
 ```
