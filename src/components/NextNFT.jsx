@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from 'react-dom';
 import { useMoralis } from "react-moralis";
-import { Card, Image, Comment, Tooltip, List, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Badge } from "antd";
+import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Badge } from "antd";
 import { FireOutlined, SendOutlined, ForkOutlined, EditOutlined, MehOutlined, SmileTwoTone, FrownOutlined } from "@ant-design/icons";
 import { CI } from "helpers/ci_3";
 import { getEllipsisTxt } from "../helpers/formatters";
@@ -16,6 +16,7 @@ const { Text, Title } = Typography;
 const { Meta } = Card;
 const { TextArea } = Input;
 const { Option } = Select;
+const { Step } = Steps;
 
 const styles = {
   NFTs: {
@@ -38,6 +39,13 @@ const styles = {
     width: "100%",
     gap: "10px",
   },
+  threshold: {
+    display: "flex",
+    flexDirection: "row",    
+    width: '100%',
+    alignItems: 'center'
+
+  },
 };
 
 function NFTBalance() {
@@ -49,40 +57,21 @@ function NFTBalance() {
   const [mintVisible, setMintVisibility] = useState(false);
   const [batchBurnVisible, setBatchBurnVisibility] = useState(false);
   const [receiverToSend, setReceiver] = useState(null);
-  const [amountToSend, setAmount] = useState(null);
   const [nftToSend, setNftToSend] = useState(null);
   const [isPending, setIsPending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [AllNFTInfos, setAllNFTInfos] = useState([]);
   const [onlyMe, setOnlyMe] = useState(false);
-  const [approved, setApproved] = useState(false);
-  const [allowanced, setAllowanced] = useState(0);
   const [nftMessage, setNFTMessage] = useState("");
-  const [mintAmount, setMintAmount] = useState(0);
-  const [mintPrice, setMintPrice] = useState(0);
-  const [burnPrice, setBurnPrice] = useState(0);
-  const [approving, setApproving] = useState(false);
   const [totalSupply, setTotalSupply] = useState(0);
-  const [tangaNFT, setTangaNFT] = useState(null);
-  const [tangaNFTHelper, setTangaNFTHelper] = useState(null);
-  const [peopleToken, setPeopleToken] = useState(null);
-  const [slippageTolerance, setSlippageTolerance] = useState(5);
   const [selectedNFTType, setSelectedNFTType] = useState('');
   const [generateOver, setGenerateOver] = useState(false);
   const [messageVisible, setMessageVisibility] = useState(false);
-  const [leavedMessageVisible, setLeavedMessageVisibility] = useState(false);
-  const [bio, setBio] = useState(false);
-  const [leavedMessage, setLeavedMessage] = useState('');
-  const [bioPrice, setBioPrice] = useState(0);
-  const [messagePrice, setMessagePrice] = useState(0);
-  const [messageData, setMessageData] = useState([]);
-  const [web3Obj, setWeb3Obj] = useState(null);
   const [mintableNFTs, setMintableNFTs] = useState([]);
   const [selectedNFT, setSelectedNFT] = useState(null);
   const [selectedWords, setSelectedWords] = useState([]);
   const [currentImg, setCurrentImg] = useState(null);
   const [currentNewImg, setCurrentNewImg] = useState(null);
-  const [ipfs, setIpfs] = useState(null);
   const [ipfsGateWay, setIPFSGateway] = useState('https://gateway.ipfs.io/ipfs/');
   const [ipfsPreStr, setIPFSPreStr] = useState('ipfs://');
   const [nextNFT, setNextNFT] = useState(null);
@@ -91,6 +80,8 @@ function NFTBalance() {
   const [pricePerPlusNFT, setPricePerPlusNFT] = useState(new BigNumber(0));
   const [pricePerMinusNFT, setPricePerMinusNFT] = useState(new BigNumber(0));
   const [wordsTotalCost, setWordsTotalCost] = useState(0);
+  const [threshold, setShreshold] = useState(50);
+  const [shadowOpacity, setShadowOpacity] = useState(20);
 
   const canvasRef = React.createRef();
   const canvasRef1 = React.createRef();
@@ -112,7 +103,6 @@ function NFTBalance() {
   useEffect(() => {
     const fetchData = () => {
       Moralis.Web3.enableWeb3().then(async (web3) => {
-        setWeb3Obj(web3);
         const nextNFTContract = new web3.eth.Contract(NextNFTInfo.abi, NextNFTInfo.address);
 
         setNextNFT(nextNFTContract);
@@ -136,13 +126,15 @@ function NFTBalance() {
           setPricePerMinusNFT(new BigNumber(pricePerMinusNFT));
         });
 
-        setIsLoading(true);
-        const options = { chain: chainId, address: NextNFTInfo.address };
-        Moralis.Web3API.token.getNFTOwners(options).then(nfts => {
-          console.log(nfts.result);
-          setAllNFTInfos(nfts.result);
-          setIsLoading(false);
-        });
+        if (chainId != null) {
+          setIsLoading(true);
+          const options = { chain: chainId, address: NextNFTInfo.address };
+          Moralis.Web3API.token.getNFTOwners(options).then(nfts => {
+            console.log(nfts.result);
+            setAllNFTInfos(nfts.result);
+            setIsLoading(false);
+          });
+        }
       })
     };
     
@@ -191,30 +183,16 @@ function NFTBalance() {
         setIsPending(false);
       });
   }
-
-  function sendNFTMessage(nft) {
-    setIsPending(true);
-    tangaNFT.methods.leaveMessage2NFT(nft.tokenId, leavedMessage).send({from: account})
-    .on('transactionHash', function(hash){
-      console.log(hash);
-    })
-    .on('receipt', function(receipt){
-      console.log(receipt);
-      setIsPending(false);
-      setMessageVisibility(false);
-    })
-    .on('error', function(error, receipt) { 
-      console.log(error, receipt);
-      setIsPending(false);
-    });
-  }
+ 
   const handleTransferClick = (nft) => {
     setNftToSend(nft);
     setVisibility(true);
   }
+
   const relayoutNFT = () => {
     generateNFT(selectedNFT);
   }
+  
   const handleGenerateNFTClick = (nft) => {
     setSelectedNFT(nft);
     generateNFT(nft);
@@ -245,6 +223,8 @@ function NFTBalance() {
       // o.canvas.cover.className = "js_cover";
       
       CI.createCharImg(currentImg, {
+        threshold: threshold/100,
+        shadowOpacity: shadowOpacity/100,
         indexTable: [],
         renderTable: [],
         img: img,
@@ -348,14 +328,14 @@ function NFTBalance() {
     setSelectedWords(words);
   }
 
-  const showMessages = (nftId) => {
-    setIsPending(true);
-    tangaNFTHelper.methods.getLeavedMessages(nftId).call().then(messages => {
-      console.log(messages);
-      setMessageData(messages);
-      setLeavedMessageVisibility(true);
-      setIsPending(false);                  
-    });
+  const changeThreshold = (v) => {
+    setShreshold(v);
+    generateNFT(selectedNFT);
+  }
+
+  const changeShadowOpacity = (v) => {
+    setShadowOpacity(v);
+    generateNFT(selectedNFT);
   }
 
   return (
@@ -443,12 +423,12 @@ function NFTBalance() {
           <Button type='primary' loading={isPending} onClick={() => mintNFT()}>Mint NFT</Button>
         ]}
         width='700px'
-      >
+      > 
         <div style={{ width: '100%', height: 20, marginButtom: '20px' }}>
           Step 1: select or input your words
         </div>
         <div style={{ width: '100%', height: 20, fontSize: 8, fontStyle: "italic" }}>
-          (If not marked free, each word will be payed {pricePerWord.shiftedBy(-18).toNumber()} eth. And one word only could be merged once.)
+          (If not marked free, each word costs {pricePerWord.shiftedBy(-18).toNumber()} eth. And one word only could be merged in one Next NFT.)
         </div>
         <Select mode="tags" 
           tokenSeparators={[',']}
@@ -526,7 +506,15 @@ function NFTBalance() {
         <div style={styles.newNFTs}>
           <Skeleton loading={isLoading}>
             <canvas ref={canvasRef} width='1200' height='1200' style={{width: 500, height: 500, marginLeft:"auto", marginRight:"auto"}}></canvas>
-          </Skeleton>
+          </Skeleton>     
+          <div style={styles.threshold}>
+            <div style={{width: '20%'}}>Contour Threshold</div>
+            <Slider style={{width: '80%'}} range={false} defaultValue={50} tipFormatter={value => `${value}%`} onAfterChange={v => changeThreshold(v)}/>
+          </div>     
+          <div style={styles.threshold}>
+            <div style={{width: '20%'}}>Shadow Opacity</div>
+            <Slider style={{width: '80%'}} range={false} defaultValue={20} tipFormatter={value => `${value}%`} onAfterChange={v => changeShadowOpacity(v)}/>
+          </div>    
           <Button disabled={!generateOver} type='primary' onClick={() => relayoutNFT()}>Re-layout</Button>
         </div>
       </Modal>
