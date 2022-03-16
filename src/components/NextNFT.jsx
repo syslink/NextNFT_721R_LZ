@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from 'react-dom';
 import { useMoralis } from "react-moralis";
-import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Badge } from "antd";
-import { FireOutlined, SendOutlined, ForkOutlined, EditOutlined, MehOutlined, SmileTwoTone, FrownOutlined } from "@ant-design/icons";
+import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select } from "antd";
+import { FireOutlined, SendOutlined, ForkOutlined, ShoppingCartOutlined, MehOutlined, SmileTwoTone, FrownOutlined } from "@ant-design/icons";
 import { CI } from "helpers/ci_3";
 import { getEllipsisTxt } from "../helpers/formatters";
 import BigNumber from "bignumber.js";
@@ -10,7 +10,7 @@ import AddressInput from "./AddressInput";
 import Address from "./Address/Address";
 import Blockies from "react-blockies";
 import { getExplorer } from "helpers/networks";
-import NextNFTInfo from '../asset/abi/nextNFT.json';
+import NextNFTInfo from '../asset/abi/nextNFT_v2.json';
 
 const { Text, Title } = Typography;
 const { Meta } = Card;
@@ -44,8 +44,17 @@ const styles = {
     flexDirection: "row",    
     width: '100%',
     alignItems: 'center'
-
   },
+  desc: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  footer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: 'center'
+  }
 };
 
 function NFTBalance() {
@@ -77,11 +86,16 @@ function NFTBalance() {
   const [nextNFT, setNextNFT] = useState(null);
   const [usedWords, setUsedWords] = useState([]);
   const [pricePerWord, setPricePerWord] = useState(new BigNumber(0));
-  const [pricePerPlusNFT, setPricePerPlusNFT] = useState(new BigNumber(0));
+  const [basePrice, setBasePrice] = useState(new BigNumber(0));
   const [pricePerMinusNFT, setPricePerMinusNFT] = useState(new BigNumber(0));
   const [wordsTotalCost, setWordsTotalCost] = useState(0);
   const [threshold, setShreshold] = useState(50);
   const [shadowOpacity, setShadowOpacity] = useState(20);
+  const [buyDialogVisible, setBuyDialogVisible] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [plusPercent, setPlusPercent] = useState(0);
+  const [extraMintFee, setExtraMintFee] = useState(new BigNumber(0));
 
   const canvasRef = React.createRef();
   const canvasRef1 = React.createRef();
@@ -92,10 +106,10 @@ function NFTBalance() {
     "Love": true,
     "Ukraine": true
   }
-  var OriginalNFTs = [<Option key='0x276C9Db99c4155aA91Bd4535468629cAC1875098'>MFER[0x276C9Db99c4155aA91Bd4535468629cAC1875098]</Option>,
-                  <Option key='0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af'>Ghost[0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af]</Option>,
-                  <Option key='0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3'>BAYC[0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3]</Option>,
-                  <Option key='0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0'>CryptoPunk[0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0]</Option>];
+  var OriginalNFTs = [<Option key='0x276C9Db99c4155aA91Bd4535468629cAC1875098'>MFER[0x276C9Db99c4155aA91Bd4535468629cAC1875098]</Option>];
+                  // <Option key='0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af'>Ghost[0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af]</Option>,
+                  // <Option key='0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3'>BAYC[0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3]</Option>,
+                  // <Option key='0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0'>CryptoPunk[0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0]</Option>];
   var Words = [<Option key='Stop War'>Free word: Stop War</Option>,
                   <Option key='Peace'>Free word: Peace</Option>,
                   <Option key='Love'>Free word: Love</Option>,
@@ -110,29 +124,33 @@ function NFTBalance() {
         nextNFTContract.methods.totalSupply().call().then(nftNumber => {
           setTotalSupply(parseInt(nftNumber));
         });
-        setTimeout(() => {
-          nextNFTContract.methods.totalSupply().call().then(nftNumber => {
-            setTotalSupply(parseInt(nftNumber));
-          });
-        }, 3000);
 
         nextNFTContract.methods.pricePerWord().call().then(pricePerWord => {
           setPricePerWord(new BigNumber(pricePerWord));
         });
-        nextNFTContract.methods.pricePerPlusNFT().call().then(pricePerPlusNFT => {
-          setPricePerPlusNFT(new BigNumber(pricePerPlusNFT));
+
+        nextNFTContract.methods.basePrice().call().then(basePrice => {
+          setBasePrice(new BigNumber(basePrice));
         });
-        nextNFTContract.methods.pricePerMinusNFT().call().then(pricePerMinusNFT => {
-          setPricePerMinusNFT(new BigNumber(pricePerMinusNFT));
+
+        nextNFTContract.methods.plusPercent().call().then(plusPercent => {
+          setPlusPercent(parseInt(plusPercent));
         });
 
         if (chainId != null) {
           setIsLoading(true);
-          const options = { chain: chainId, address: NextNFTInfo.address };
-          Moralis.Web3API.token.getNFTOwners(options).then(nfts => {
+          const options = { chain: chainId, address: NextNFTInfo.address, offset: 0, limit: 20 };
+          Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
             console.log(nfts.result);
-            setAllNFTInfos(nfts.result);
             setIsLoading(false);
+            const nftArr = [];
+            for (var i = 0; i < nfts.result.length; i++) {
+              const nft = nfts.result[i];
+              const metadata = await nextNFTContract.methods.tokenId2MetadataMap(nft.token_id).call();
+              nft.metadata = metadata;
+              nftArr.push(nft);
+            }
+            setAllNFTInfos(nftArr);
           });
         }
       })
@@ -267,19 +285,39 @@ function NFTBalance() {
     });
   }
 
-  const checkMotherNFT = (nft) => {
-    // window.open(`${getExplorer(chainId)}address/${nft.token_address}/${nft.token_id}`, "_blank")
-    nextNFT.methods.tokenId2MetadataMap(nft.token_id).call().then(metadata => {
-      if (metadata != null) {
-        window.open(`${getExplorer(chainId)}nft/${metadata.baseNFT}/${metadata.baseTokenId}`, "_blank");
-      }
+  const buyNFT = (nft) => {
+    setIsPending(true);
+    const buyAmount = '0x' + new BigNumber(nft.metadata.cost).multipliedBy(10000 + plusPercent).div(10000).toString(16);
+    nextNFT.methods.buy(parseInt(nft.token_id)).send({from: account, value: buyAmount})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+      setIsPending(false);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+      setIsPending(false);
     });
+  }
+
+  const checkMotherNFT = (nft) => {
+    window.open(`${getExplorer(chainId)}nft/${nft.metadata.baseNFT}/${nft.metadata.baseTokenId}`, "_blank");
+    // nextNFT.methods.tokenId2MetadataMap(nft.token_id).call().then(metadata => {
+    //   if (metadata != null) {
+    //     window.open(`${getExplorer(chainId)}nft/${metadata.baseNFT}/${metadata.baseTokenId}`, "_blank");
+    //   }
+    // });
+  }
+  const changeExtraMintFee = (v) => {
+    setExtraMintFee(new BigNumber(v.target.value).shiftedBy(18));
   }
 
   async function mintNFT() {
     const addedPayedWords = selectedWords.filter(word => !freeWords[word]).filter(word => !usedWords.includes(word));
     const wordsCost = pricePerWord.multipliedBy(addedPayedWords.length);
-    const nftCost = pricePerPlusNFT.multipliedBy(totalSupply + 1);
+    const nftCost = basePrice.plus(extraMintFee);
     const totalCost = '0x' + nftCost.plus(wordsCost).toString(16);
     setIsPending(true);
     let dataUrl = currentImg.toDataURL("image/png");
@@ -299,10 +337,6 @@ function NFTBalance() {
       setIsPending(false);
     });
   }
-
-  const messageChange = (e) => {
-    setNFTMessage(e.target.value);
-  };
 
   const selectNFTTypeChange = (nftAddr) => {
     setSelectedNFTType(nftAddr);
@@ -351,7 +385,7 @@ function NFTBalance() {
           {AllNFTInfos != null && AllNFTInfos.map((nft, index) => {
               const bMine = account != null && nft.owner_of.toLowerCase() === account.toLowerCase();
               if (onlyMe && !bMine) return ''; 
-              
+              const latestPrice = nft.metadata != null ? new BigNumber(nft.metadata.cost).shiftedBy(-18).toNumber() : 0;
               return (
                 <Card
                   hoverable
@@ -368,6 +402,12 @@ function NFTBalance() {
                   ] : [                    
                     <Tooltip title="Check mother NFT">
                       <ForkOutlined onClick={() => checkMotherNFT(nft)} />
+                    </Tooltip>,              
+                    <Tooltip title="Buy this NFT, latest price+5%">
+                      <ShoppingCartOutlined onClick={() => buyNFT(nft)} />
+                    </Tooltip>,         
+                    <Tooltip title="Check mother NFT">
+                      <ForkOutlined onClick={() => checkMotherNFT(nft)} />
                     </Tooltip>, 
                   ]}
                   style={{ width: 300, border: "2px solid #e7eaf3" }}
@@ -382,7 +422,13 @@ function NFTBalance() {
                   }
                   key={index}
                 >
-                  <Meta title={nft.name + ' #' + nft.token_id} description={<Address avatar='left' size={6} copyable style={{ fontSize: "20px" }} address={nft.owner_of}/>} />
+                  <Meta title={nft.name + ' #' + nft.token_id} 
+                    description={
+                    <div style={styles.desc}>
+                      <Text>Latest Price: <Text strong>{latestPrice} eth</Text></Text>
+                      <Address avatar='left' size={6} copyable style={{ fontSize: "20px" }} address={nft.owner_of}/>
+                    </div>
+                    } />
                 </Card>
               );
             })}
@@ -401,26 +447,30 @@ function NFTBalance() {
       </Modal>
       
       <Modal
-        title="Rule of Mint/Burn"
+        title="Rule of Mint/Buy/Sell"
         visible={ruleVisible}
         onCancel={() => setRuleVisibility(false)}
         onOk={() => setRuleVisibility(false)}
         confirmLoading={isPending}
         width='600px'
       >
-        <Text>If current the total supply of NextNFT is <Text strong>N</Text>:</Text><p/>   
-        <Text>1) mint new NFT with M payment words, will cost you <Text strong>0.01*(N+1) + 0.005*M</Text> ETH</Text><p/>
-        <Text>2) burn one NFT, will retrieve <Text strong>0.009*N</Text> ETH</Text> <p/>
-        <Text>3) if one word has been attached to an exist NFT, it will not be used until the NFT burned</Text><p/>
+        <Text>1) If you mint new NFT with M payment words, it will cost you <Text strong>0.05 + 0.005*M</Text> ETH</Text><p/>
+        <Text>2) If somebody pays <Text strong>+5%</Text> of your NFT's price, your NFT will be sold out automatically.</Text> <p/>
+        <Text>3) If you don't want your NFT to be bought at a low price, you can specify a suitable price at the time of mint.</Text><p/>
       </Modal>      
 
       <Modal
-        title={`Mint ${NextNFTInfo?.name || "NFT"} (Mint Price: ${pricePerPlusNFT.multipliedBy(totalSupply + 1).plus(wordsTotalCost).shiftedBy(-18).toNumber()} ETH)`}
+        title={`Mint ${NextNFTInfo?.name || "NFT"} `}
         visible={mintVisible}
         onCancel={() => setMintVisibility(false)}
         confirmLoading={isPending}
         footer={[
-          <Button type='primary' loading={isPending} onClick={() => mintNFT()}>Mint NFT</Button>
+          <div style={styles.footer}>
+            <Text>(Current Mint Price: ${basePrice.plus(extraMintFee).plus(wordsTotalCost).shiftedBy(-18).toNumber()} ETH)</Text>
+            <Input style={{width: '40%'}} addonBefore="Extra Mint Fee" addonAfter="eth" defaultValue="0" onChange={(v) => changeExtraMintFee(v)}/>,
+            <Button type='primary' loading={isPending} onClick={() => mintNFT()}>Mint NFT</Button>
+          </div>
+          
         ]}
         width='700px'
       > 
