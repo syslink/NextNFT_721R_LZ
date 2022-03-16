@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from 'react-dom';
 import { useMoralis } from "react-moralis";
-import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select } from "antd";
+import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Pagination } from "antd";
 import { FireOutlined, SendOutlined, ForkOutlined, ShoppingCartOutlined, MehOutlined, SmileTwoTone, FrownOutlined } from "@ant-design/icons";
 import { CI } from "helpers/ci_3";
 import { getEllipsisTxt } from "../helpers/formatters";
@@ -23,9 +23,8 @@ const styles = {
     display: "flex",
     flexWrap: "wrap",
     WebkitBoxPack: "start",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     margin: "20 auto",
-    maxWidth: "1000px",
     width: "100%",
     gap: "10px",
   },
@@ -92,8 +91,8 @@ function NFTBalance() {
   const [threshold, setShreshold] = useState(50);
   const [shadowOpacity, setShadowOpacity] = useState(20);
   const [buyDialogVisible, setBuyDialogVisible] = useState(false);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
+  // const [page, setPage] = useState(0);
+  // const [pageSize, setPageSize] = useState(20);
   const [plusPercent, setPlusPercent] = useState(0);
   const [extraMintFee, setExtraMintFee] = useState(new BigNumber(0));
 
@@ -114,6 +113,23 @@ function NFTBalance() {
                   <Option key='Peace'>Free word: Peace</Option>,
                   <Option key='Love'>Free word: Love</Option>,
                   <Option key='Ukraine'>Free word: Ukraine</Option>];
+  
+  const getDataFromMoralis = (contractAddr, offset, limit) => {
+    setIsLoading(true);
+    const options = { chain: chainId, address: contractAddr, offset, limit };
+    Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
+      console.log(nfts.result);
+      setIsLoading(false);
+      const nftArr = [];
+      for (var i = 0; i < nfts.result.length; i++) {
+        const nft = nfts.result[i];
+        const metadata = await nextNFT.methods.tokenId2MetadataMap(nft.token_id).call();
+        nft.metadata = metadata;
+        nftArr.push(nft);
+      }
+      setAllNFTInfos(nftArr);
+    });
+  }
   useEffect(() => {
     const fetchData = () => {
       Moralis.Web3.enableWeb3().then(async (web3) => {
@@ -139,7 +155,7 @@ function NFTBalance() {
 
         if (chainId != null) {
           setIsLoading(true);
-          const options = { chain: chainId, address: NextNFTInfo.address, offset: 0, limit: 20 };
+          const options = { chain: chainId, address: NextNFTInfo.address, offset: 0, limit: 10 };
           Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
             console.log(nfts.result);
             setIsLoading(false);
@@ -164,7 +180,7 @@ function NFTBalance() {
     setCurrentImg(canvasRef.current);
     setCurrentNewImg(canvasRef1.current);
   }, [canvasRef, canvasRef1]);
-          
+  
   // setTimeout(() => {
   //   setMintPrice();
   // }, 15000);
@@ -179,6 +195,10 @@ function NFTBalance() {
 
   const showRuleOfMintBurn = () => {
     setRuleVisibility(true);
+  }
+
+  const changePage = (page, pageSize) => {
+    getDataFromMoralis(NextNFTInfo.address, (page - 1)*pageSize, pageSize);
   }
 
   async function transfer() {
@@ -381,6 +401,7 @@ function NFTBalance() {
         <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Mint/Burn</Button>
       </h1>
       <div style={styles.NFTs}>
+        <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={10} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
         <Skeleton loading={isLoading}>
           {AllNFTInfos != null && AllNFTInfos.map((nft, index) => {
               const bMine = account != null && nft.owner_of.toLowerCase() === account.toLowerCase();
