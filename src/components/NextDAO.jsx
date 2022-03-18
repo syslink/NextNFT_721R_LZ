@@ -10,7 +10,7 @@ import Address from "./Address/Address";
 import Blockies from "react-blockies";
 import { getExplorer } from "helpers/networks";
 import NextDAOInfo from '../asset/abi/nextDAO.json';
-import NextNFTInfo from '../asset/abi/nextNFT.json';
+import NextNFTInfo from '../asset/abi/nextNFT_v2.json';
 import OpenSeaLogo from '../asset/opensea.svg';
 
 const { Text, Title } = Typography;
@@ -124,6 +124,7 @@ function NextDAO() {
       message.warning('You have no NEXT nft to vote.');
       return;
     }
+    setVoteVisibility(true);
     const nftInfos = [];
     for (var i = 0; i < myNFTInfos.length; i++) {
       const nftInfo = myNFTInfos[i];
@@ -132,8 +133,6 @@ function NextDAO() {
       nftInfos.push(nftInfo);
     }
     setMyNFTInfos(nftInfos);
-    setVoteVisibility(true);
-  
   }
 
   const vote = () => {

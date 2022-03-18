@@ -402,7 +402,7 @@ function NFTBalance() {
         NEXT NFTs{' '} 
         <Checkbox checked={onlyMe} onChange={e => setOnlyMe(e.target.checked)}>Only Me</Checkbox>
         <Button type='primary' onClick={() => showMintNFTDialog()}>Mint NFT</Button>
-        <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Mint/Burn</Button>
+        <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Mint/Buy/Burn</Button>
       </h1>
       <div style={styles.NFTs}>
         <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={10} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
@@ -472,7 +472,7 @@ function NFTBalance() {
       </Modal>
       
       <Modal
-        title="Rule of Mint/Buy/Sell"
+        title="Rule of Mint/Buy/Burn"
         visible={ruleVisible}
         onCancel={() => setRuleVisibility(false)}
         onOk={() => setRuleVisibility(false)}
@@ -481,7 +481,8 @@ function NFTBalance() {
       >
         <Text>1) If you mint new NFT with M payment words, it will cost you <Text strong>0.05 + 0.005*M</Text> ETH</Text><p/>
         <Text>2) If somebody pays <Text strong>+5%</Text> of your NFT's price, your NFT will be sold out automatically.</Text> <p/>
-        <Text>3) If you don't want your NFT to be bought at a low price, you can specify a suitable price at the time of mint.</Text><p/>
+        <Text>3) If you don't want your NFT to be bought at a low price, you can <Text strong>specify a suitable price</Text> at the time of mint.</Text><p/>
+        <Text>4) The NFT could be burned, and if burned, it could be minted again, and the words also could be merged again.</Text><p/>
       </Modal>      
 
       <Modal
