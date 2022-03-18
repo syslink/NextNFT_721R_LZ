@@ -472,17 +472,19 @@ function NFTBalance() {
       </Modal>
       
       <Modal
-        title="Rule of Mint/Buy/Burn"
+        title="Rule of Mint/Buy/Burn NEXT NFT"
         visible={ruleVisible}
         onCancel={() => setRuleVisibility(false)}
         onOk={() => setRuleVisibility(false)}
         confirmLoading={isPending}
         width='600px'
       >
-        <Text>1) If you mint new NFT with M payment words, it will cost you <Text strong>0.05 + 0.005*M</Text> ETH</Text><p/>
-        <Text>2) If somebody pays <Text strong>+5%</Text> of your NFT's price, your NFT will be sold out automatically.</Text> <p/>
-        <Text>3) If you don't want your NFT to be bought at a low price, you can <Text strong>specify a suitable price</Text> at the time of mint.</Text><p/>
-        <Text>4) The NFT could be burned, and if burned, it could be minted again, and the words also could be merged again.</Text><p/>
+        <Text>1) If you mint new NFT with M payment words, it will cost you <Text strong>0.05 + 0.005*M</Text> ETH at least.</Text><p/>
+        <Text>2) You also can <Text strong>specify a price</Text> when mint, and the specified price should be larger than 0.05 ETH.</Text><p/>
+        <Text>3) Anyone who pays <Text strong>+5%</Text> of your NFT's current price, will get your Next NFT.</Text> <p/>
+        <Text>4) The platform will charge <Text strong>5%</Text> of the difference in price as a commission.</Text> <p/>
+        <Text>5) The current owner of mother NFT will charge <Text strong>5%</Text> of the difference in price as a commission.</Text> <p/>
+        <Text>6) The NEXT NFT could be burned, and if burned, it could be minted by mother NFT again, and the words in this NFT also could be merged again.</Text><p/>
       </Modal>      
 
       <Modal
