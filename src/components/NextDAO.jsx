@@ -174,7 +174,7 @@ function NextDAO() {
         Vote the NFT [{new Date(parseInt(startTime)*1000).toLocaleString()} ~ {new Date(parseInt(endTime)*1000).toLocaleString()}]
       </h1>
       <div style={styles.NFTs}>
-        <Skeleton loading={isLoading}>
+        <Skeleton active loading={isLoading}>
           {electionNFTs != null && electionNFTs.map((nft, index) => {
               const image = JSON.parse(nft.metadata).image.substr('ipfs://'.length);
               const imageUrl = ipfsGateWay + image;   

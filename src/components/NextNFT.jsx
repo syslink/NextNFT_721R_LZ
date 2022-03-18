@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from 'react-dom';
 import { useMoralis } from "react-moralis";
-import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Pagination } from "antd";
+import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Pagination, message } from "antd";
 import { FireOutlined, SendOutlined, ForkOutlined, ShoppingCartOutlined, MehOutlined, SmileTwoTone, FrownOutlined, StopOutlined } from "@ant-design/icons";
 import { CI } from "helpers/ci_3";
 import { getEllipsisTxt } from "../helpers/formatters";
@@ -175,6 +175,9 @@ function NFTBalance() {
     };
     
     fetchData();
+    if (chainId !== '0x5') {
+      message.warning('Please switch Goerli network for testing.');
+    }
   }, [Moralis, account, totalSupply, chainId]);
 
   useEffect(() => {
