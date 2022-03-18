@@ -905,7 +905,7 @@ var CI = (function() {
 
             var defaultOpt = {
 				size: 300,
-				viewSize: 300,
+				viewSize: 500,
 				threshold: 0.5,	// 轮廓阈值
 				fontFamily: ["黑体"],	// 字体
 				fontSize: 12,	// 基本字体大小
@@ -945,7 +945,7 @@ var CI = (function() {
 				function (data, next) {
 					var img = opts.img;
 					if (img && img.tagName == "IMG") {
-						var c = ci.loadImgToCanvas(img, { width: img.width, height: img.height });
+						var c = ci.loadImgToCanvas(img, { width: img.width, height: img.height, viewHeight: opts.viewSize, viewWidth: opts.viewSize });
 						opts.img = c.canvas;
 					}
 					next();
