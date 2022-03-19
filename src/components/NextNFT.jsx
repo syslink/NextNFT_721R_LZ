@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from 'react-dom';
 import { useMoralis } from "react-moralis";
 import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Pagination, message } from "antd";
-import { FireOutlined, SendOutlined, ForkOutlined, ShoppingCartOutlined, MehOutlined, SmileTwoTone, FrownOutlined, StopOutlined } from "@ant-design/icons";
+import { FireOutlined, SendOutlined, ForkOutlined, ShoppingCartOutlined, MehOutlined, SmileTwoTone, FrownOutlined, StopOutlined, ToTopOutlined } from "@ant-design/icons";
 import { CI } from "helpers/ci_3";
 import { getEllipsisTxt } from "../helpers/formatters";
 import BigNumber from "bignumber.js";
@@ -60,15 +60,17 @@ function NFTBalance() {
   // const { data: NFTBalances } = useNFTBalances();
   const { Moralis, chainId, account } = useMoralis();
   const [visible, setVisibility] = useState(false);
+  const [pullUpVisible, setPullUpVisible] = useState(false);
   const [ruleVisible, setRuleVisibility] = useState(false);
   const [bioVisible, setBioVisibility] = useState(false);
   const [mintVisible, setMintVisibility] = useState(false);
   const [batchBurnVisible, setBatchBurnVisibility] = useState(false);
   const [receiverToSend, setReceiver] = useState(null);
   const [nftToSend, setNftToSend] = useState(null);
+  const [nftToPull, setNftToPull] = useState(null);
   const [isPending, setIsPending] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingNext, setIsLoadingNext] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingNext, setIsLoadingNext] = useState(false);
   const [AllNFTInfos, setAllNFTInfos] = useState([]);
   const [onlyMe, setOnlyMe] = useState(false);
   const [nftMessage, setNFTMessage] = useState("");
@@ -95,8 +97,11 @@ function NFTBalance() {
   const [canvasWidth, setCanvasWidth] = useState(1500);
   const [canvasHeight, setCanvasHeight] = useState(1500);
   const [plusPercent, setPlusPercent] = useState(0);
+  const [feePercent, setFeePercent] = useState(0);
   const [extraMintFee, setExtraMintFee] = useState(new BigNumber(0));
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pullUpFee, setPullUpFee] = useState(new BigNumber(0));
+  const [targetPrice, setTargetPrice] = useState(new BigNumber(0));
 
   const canvasRef = React.createRef();
   const canvasRef1 = React.createRef();
@@ -155,6 +160,10 @@ function NFTBalance() {
           setPlusPercent(parseInt(plusPercent));
         });
 
+        nextNFTContract.methods.feePercent().call().then(feePercent => {
+          setFeePercent(parseInt(feePercent));
+        });        
+
         if (chainId != null) {
           setIsLoadingNext(true);
           const options = { chain: chainId, address: NextNFTInfo.address, offset: 0, limit: 10 };
@@ -175,7 +184,7 @@ function NFTBalance() {
     };
     
     fetchData();
-    if (chainId !== '0x5') {
+    if (chainId != null && chainId !== '0x5') {
       message.warning('Please switch Goerli network for testing.');
     }
   }, [Moralis, account, totalSupply, chainId]);
@@ -315,14 +324,37 @@ function NFTBalance() {
       setIsPending(false);
     });
   }
+  
+  const changeTargetPrice = (v) => {
+    const targetPrice = new BigNumber(v.target.value).shiftedBy(18);
+    setTargetPrice(targetPrice);
+    const gapPrice = targetPrice.minus(new BigNumber(nftToPull.metadata.cost));
+    setPullUpFee(gapPrice.multipliedBy(feePercent).div(10000));
+  }
+
+  const pullUpValueOfNFT = (nft) => {
+    setNftToPull(nft);
+    setPullUpVisible(true);
+  }
+
+  const pullUpNFTValue = () => {
+    setIsPending(true);
+    nextNFT.methods.pullUp(parseInt(nftToPull.token_id), '0x' + targetPrice.toString(16)).send({from: account, value: '0x' + pullUpFee.toString(16)})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+      setIsPending(false);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+      setIsPending(false);
+    });
+  }
 
   const checkMotherNFT = (nft) => {
     window.open(`${getExplorer(chainId)}nft/${nft.metadata.baseNFT}/${nft.metadata.baseTokenId}`, "_blank");
-    // nextNFT.methods.tokenId2MetadataMap(nft.token_id).call().then(metadata => {
-    //   if (metadata != null) {
-    //     window.open(`${getExplorer(chainId)}nft/${metadata.baseNFT}/${metadata.baseTokenId}`, "_blank");
-    //   }
-    // });
   }
   const changeExtraMintFee = (v) => {
     setExtraMintFee(new BigNumber(v.target.value).shiftedBy(18));
@@ -402,7 +434,7 @@ function NFTBalance() {
         NEXT NFTs{' '} 
         <Checkbox checked={onlyMe} onChange={e => setOnlyMe(e.target.checked)}>Only Me</Checkbox>
         <Button type='primary' onClick={() => showMintNFTDialog()}>Mint NFT</Button>
-        <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Mint/Buy/Burn</Button>
+        <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Mint/Buy/Burn/PullUp</Button>
       </h1>
       <div style={styles.NFTs}>
         <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={10} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
@@ -417,17 +449,17 @@ function NFTBalance() {
                   actions={bMine ? [                    
                     <Tooltip title="Transfer NFT">
                       <SendOutlined onClick={() => handleTransferClick(nft)}/>
-                    </Tooltip>,
+                    </Tooltip>,         
+                    <Tooltip title="Pull up the value of NFT">
+                      <ToTopOutlined onClick={() => pullUpValueOfNFT(nft)} />
+                    </Tooltip>, 
                     <Tooltip title="Burn">
                       <FireOutlined onClick={() => burnNFT(nft)} />
                     </Tooltip>,           
                     <Tooltip title="Check mother NFT">
                       <ForkOutlined onClick={() => checkMotherNFT(nft)} />
                     </Tooltip>, 
-                  ] : [                    
-                    <Tooltip title="Check mother NFT">
-                      <ForkOutlined onClick={() => checkMotherNFT(nft)} />
-                    </Tooltip>,              
+                  ] : [                      
                     <Tooltip title="Buy this NFT, latest price+5%">
                       <ShoppingCartOutlined onClick={() => buyNFT(nft)} />
                     </Tooltip>,         
@@ -470,6 +502,19 @@ function NFTBalance() {
       >
         <AddressInput autoFocus placeholder="Receiver" onChange={setReceiver} />
       </Modal>
+
+      <Modal
+        title={`Pull up the value of NFT`}
+        visible={pullUpVisible}
+        onCancel={() => setPullUpVisible(false)}
+        onOk={() => pullUpNFTValue()}
+        confirmLoading={isPending}
+        okText="Confirm"
+      >
+        <Input style={{width: '100%'}} addonBefore="Target Price" addonAfter="eth" defaultValue="0" onChange={(v) => changeTargetPrice(v)}/>
+        <Text>Actual fees to be paid is {pullUpFee.shiftedBy(-18).toNumber()} eth.</Text><p/>
+        <Text>NOTE: Actual fees = (target price - current price) * {feePercent / 100}%.</Text><p/>
+      </Modal>
       
       <Modal
         title="Rule of Mint/Buy/Burn NEXT NFT"
@@ -485,6 +530,7 @@ function NFTBalance() {
         <Text>4) The platform will charge <Text strong>5%</Text> of the difference in price as a commission.</Text> <p/>
         <Text>5) The current owner of mother NFT will charge <Text strong>5%</Text> of the difference in price as a commission.</Text> <p/>
         <Text>6) The NEXT NFT could be burned, and if burned, it could be minted by mother NFT again, and the words in this NFT also could be merged again.</Text><p/>
+        <Text>7) The owner could pull up the value of the NEXT NFT, and only need to pay the fee of gap price.</Text><p/>        
       </Modal>      
 
       <Modal

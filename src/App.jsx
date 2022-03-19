@@ -204,12 +204,12 @@ const App = ({ isServerInfo }) => {
         </div>
       </Router>
       <Footer style={{ textAlign: "center" }}>
-        {/* <Text style={{ display: "block" }}>
+        <Text style={{ display: "block" }}>
           ⭐️ Please join us{" "}
           <a href="https://discord.gg/XZ9JyRGe" target="_blank" rel="noopener noreferrer">
             Discord
           </a>
-        </Text> */}
+        </Text>
       </Footer>
     </Layout>
   );
