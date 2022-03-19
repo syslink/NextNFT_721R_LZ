@@ -121,6 +121,7 @@ const App = ({ isServerInfo }) => {
           <p>Note: </p>
           <p>1: When the donation amount reaches 2 ETH or the number of donors reached 20, we will launch this DAPP to the mainnet of ethereum.</p><p/><p/>
           <p>2: The donation is only a donation, not an investment, but does not exclude future incentives.</p>
+          <p>3: Even if the donation does not meet expectations, we will still launch the main network at the right time.</p>
         </div>
       ),
       onOk() {},
@@ -138,10 +139,9 @@ const App = ({ isServerInfo }) => {
           <MenuItems />
           <div style={styles.headerRight}>
             <Button type='dashed' shape="round" icon={<GiftOutlined />} onClick={() => donate()}>DONATE</Button>
-            <Button type='primary' onClick={() => claimETH()}>Claim ETH from NSBA</Button>
             <Button type='primary' onClick={() => claimNFT()}>Claim NFTs for testing</Button>
             <Chains />
-            {/* <TokenPrice
+            {/* <TokenPric
               address="0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
               chain="eth"
               image="https://cloudflare-ipfs.com/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg/"
