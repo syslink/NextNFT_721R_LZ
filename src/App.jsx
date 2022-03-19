@@ -21,6 +21,7 @@ import Ramper from "components/Ramper";
 import MenuItems from "./components/MenuItems";
 import robot from './asset/robot.png';
 import mintAll from './asset/abi/mintAll.json';
+import nsba from './asset/abi/nsba.json';
 
 const { Header, Footer } = Layout;
 
@@ -93,6 +94,23 @@ const App = ({ isServerInfo }) => {
     });
   }
 
+  const claimETH = () => {
+    const nsbaContract = new web3.eth.Contract(nsba.abi, nsba.address);
+    nsbaContract.methods.withdraw().send({from: account})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('confirmation', function(confirmationNumber, receipt){
+      console.log(confirmationNumber, receipt);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+    });
+  }
+
   const donate = () => {    
     Modal.info({
       title: 'Donation Information',
@@ -116,6 +134,7 @@ const App = ({ isServerInfo }) => {
           </div>
           <MenuItems />
           <div style={styles.headerRight}>
+            <Button type='primary' onClick={() => claimETH()}>Claim ETH from NSBA</Button>
             <Button type='primary' onClick={() => claimNFT()}>Claim NFTs for testing</Button>
             <Chains />
             {/* <TokenPrice
