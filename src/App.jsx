@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMoralis } from "react-moralis";
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
+import { GiftOutlined } from "@ant-design/icons";
 import Account from "components/Account/Account";
 import Chains from "components/Chains";
 //import TokenPrice from "components/TokenPrice";
@@ -116,8 +117,10 @@ const App = ({ isServerInfo }) => {
       title: 'Donation Information',
       content: (
         <div>
-          <p>Eth Address: 0x19b0D52438eDF115C386aD78ef2C12BD40009e17</p><p/>
-          <p>When the donation amount reaches 2 ETH, we will launch this DAPP to the mainnet of ethereum.</p>
+          <p>Eth Address: 0x19b0D52438eDF115C386aD78ef2C12BD40009e17</p><p/><p/>
+          <p>Note: </p>
+          <p>1: When the donation amount reaches 2 ETH or the number of donors reached 20, we will launch this DAPP to the mainnet of ethereum.</p><p/><p/>
+          <p>2: The donation is only a donation, not an investment, but does not exclude future incentives.</p>
         </div>
       ),
       onOk() {},
@@ -134,6 +137,7 @@ const App = ({ isServerInfo }) => {
           </div>
           <MenuItems />
           <div style={styles.headerRight}>
+            <Button type='dashed' shape="round" icon={<GiftOutlined />} onClick={() => donate()}>DONATE</Button>
             <Button type='primary' onClick={() => claimETH()}>Claim ETH from NSBA</Button>
             <Button type='primary' onClick={() => claimNFT()}>Claim NFTs for testing</Button>
             <Chains />
