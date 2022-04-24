@@ -4,11 +4,11 @@
 
 📄 Clone or fork `NextNFT`:
 ```sh
-git clone https://github.com/syslink/NextNFT.git
+git clone https://github.com/syslink/NextNFT_721R_LZ.git
 ```
 💿 Install all dependencies:
 ```sh
-cd NextNFT
+cd NextNFT_721R_LZ
 npm install 
 ```
 
