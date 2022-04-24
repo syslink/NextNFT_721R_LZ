@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from 'react-dom';
 import { useMoralis } from "react-moralis";
-import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Pagination, message, Upload } from "antd";
-import { FireOutlined, SendOutlined, PictureOutlined, UploadOutlined, MehOutlined, SmileTwoTone, FrownOutlined, StopOutlined, ToTopOutlined } from "@ant-design/icons";
+import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Pagination, message } from "antd";
+import { FireOutlined, SendOutlined, ForkOutlined, ShoppingCartOutlined, MehOutlined, SmileTwoTone, FrownOutlined, StopOutlined, ToTopOutlined } from "@ant-design/icons";
 import { CI } from "helpers/ci_3";
 import { getEllipsisTxt } from "../helpers/formatters";
 import BigNumber from "bignumber.js";
-import {ethers} from 'ethers';
-import {MerkleTree} from 'merkletreejs';
 import AddressInput from "./AddressInput";
 import Address from "./Address/Address";
 import Blockies from "react-blockies";
 import { getExplorer } from "helpers/networks";
-import NextNFTInfo from '../asset/abi/nextNFT_v3.json';
-import WhiteList from '../asset/whiteList.json';
+import NextNFTInfo from '../asset/abi/nextNFT_v2.json';
 
-const keccak256 = require('keccak256');
 const { Text, Title } = Typography;
 const { Meta } = Card;
 const { TextArea } = Input;
@@ -28,7 +24,7 @@ const styles = {
     flexWrap: "wrap",
     WebkitBoxPack: "start",
     justifyContent: "space-between",
-    margin: "35 auto",
+    margin: "20 auto",
     width: "100%",
     gap: "10px",
   },
@@ -64,11 +60,9 @@ function NFTBalance() {
   // const { data: NFTBalances } = useNFTBalances();
   const { Moralis, chainId, account } = useMoralis();
   const [visible, setVisibility] = useState(false);
-  const [traverseChainVisible, setTraverseChainVisible] = useState(false);
   const [pullUpVisible, setPullUpVisible] = useState(false);
   const [ruleVisible, setRuleVisibility] = useState(false);
-  const [addressInputVisible, setAddressInputVisible] = useState(false);
-  const [importImgVisible, setImportImgVisible] = useState(false);
+  const [bioVisible, setBioVisibility] = useState(false);
   const [mintVisible, setMintVisibility] = useState(false);
   const [batchBurnVisible, setBatchBurnVisibility] = useState(false);
   const [receiverToSend, setReceiver] = useState(null);
@@ -85,7 +79,6 @@ function NFTBalance() {
   const [generateOver, setGenerateOver] = useState(false);
   const [messageVisible, setMessageVisibility] = useState(false);
   const [mintableNFTs, setMintableNFTs] = useState([]);
-  const [selfImages, setSelfImages] = useState([]);
   const [selectedNFT, setSelectedNFT] = useState(null);
   const [selectedWords, setSelectedWords] = useState([]);
   const [currentImg, setCurrentImg] = useState(null);
@@ -97,7 +90,7 @@ function NFTBalance() {
   const [pricePerWord, setPricePerWord] = useState(new BigNumber(0));
   const [basePrice, setBasePrice] = useState(new BigNumber(0));
   const [pricePerMinusNFT, setPricePerMinusNFT] = useState(new BigNumber(0));
-  const [destChain, setDestChain] = useState(0);
+  const [wordsTotalCost, setWordsTotalCost] = useState(0);
   const [threshold, setShreshold] = useState(50);
   const [shadowOpacity, setShadowOpacity] = useState(20);
   const [buyDialogVisible, setBuyDialogVisible] = useState(false);
@@ -109,219 +102,104 @@ function NFTBalance() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [pullUpFee, setPullUpFee] = useState(new BigNumber(0));
   const [targetPrice, setTargetPrice] = useState(new BigNumber(0));
-  const [inputNFTAddress, setInputNFTAddress] = useState('');
-  const [localImgs, setLocalImgs] = useState([]);
 
   const canvasRef = React.createRef();
   const canvasRef1 = React.createRef();
-  const imgFile = React.createRef();
-  const localImgFiles = React.createRef();
 
-  const IsMainnet = window.location.origin.indexOf("test") < 0 && window.location.origin.indexOf("localhost") < 0;
-  var OriginalNFTs = IsMainnet ? 
-                     [<Option key='0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D'>BAYC[0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D]</Option>,
-                      <Option key='0x79FCDEF22feeD20eDDacbB2587640e45491b757f'>MFER[0x79FCDEF22feeD20eDDacbB2587640e45491b757f]</Option>,
-                      <Option key='0'>manual input NFT contract address</Option>] 
-                      : 
-                     [<Option key='0x0771B99CB0680E7E2A31C0524B4e99CfB7e390Ad'>BAYC[0x0771B99CB0680E7E2A31C0524B4e99CfB7e390Ad]</Option>,
-                      <Option key='0xC44674eB3cB5A2adc7e9138dDC382f4eBc169F0e'>MFER[0xC44674eB3cB5A2adc7e9138dDC382f4eBc169F0e]</Option>,
-                      <Option key='0'>manual input NFT contract address</Option>,
-                      <Option key='1'>import image from local file</Option>];
+  const freeWords = {
+    "Stop War": true,
+    "Peace": true,
+    "Love": true,
+    "Ukraine": true
+  }
+  var OriginalNFTs = [<Option key='0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3'>BAYC[0x6FBDA3189F29Ea03db988d3E2C1b76F0126eC9e3]</Option>,
+                      <Option key='0x276C9Db99c4155aA91Bd4535468629cAC1875098'>MFER[0x276C9Db99c4155aA91Bd4535468629cAC1875098]</Option>];
                   // <Option key='0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af'>Ghost[0xbEb1Ac15E247f147AE361df4c03fBC09bFa824Af]</Option>,
                   // <Option key='0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0'>CryptoPunk[0xD71980f5Babd9c17D1912f7D91bBe0528f84e2a0]</Option>];
-  var Words = [<Option key='Peace'>Peace</Option>,
-                  <Option key='Love'>Love</Option>,
-                  <Option key='DAO'>DAO</Option>,
-                  <Option key='NFT'>NFT</Option>,
-                  <Option key='DeFi'>DeFi</Option>];
+  var Words = [<Option key='Stop War'>Free word: Stop War</Option>,
+                  <Option key='Peace'>Free word: Peace</Option>,
+                  <Option key='Love'>Free word: Love</Option>,
+                  <Option key='Ukraine'>Free word: Ukraine</Option>];
   
-  var TestChains = [<Option key='10001'>Rinkeby</Option>,
-                  <Option key='10002'>Binance Smart Chain Testnet</Option>,
-                  <Option key='10006'>Fuji (Avalanche testnet)</Option>,
-                  <Option key='10009'>Mumbai (Polygon testnet)</Option>];
-                  // <Option key='10010'>Arbitrum (Rinkeby testnet)</Option>,
-                  // <Option key='10011'>Optimism (Kovan testnet)</Option>,
-                  // <Option key='10012'>Fantom (testnet)</Option>
-
-  var MainChains = [<Option key='1'>Ethereum</Option>,
-                  <Option key='2'>Binance Smart Chain</Option>,
-                  <Option key='6'>Avalanche</Option>,
-                  <Option key='9'>Polygon</Option>];
-                  // <Option key='10'>Rinkeby</Option>,
-                  // <Option key='11'>Optimism</Option>,
-                  // <Option key='12'>Fantom</Option>];   
-  const chainMap = {'0x1':'1',     "0x38":"2",     "0xa86a":"6",     "0x89":"9",
-                    '0x4':'10001', "0x61":"10002", "0xa869":"10006", "0x13881":"10009"}    
-
-  const nextNFTAddress = NextNFTInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][chainId];   
-  NextNFTInfo.address = nextNFTAddress;               
-
-
-  // const options = { chain: chainId, address: contractAddr, offset, limit };
-  // Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
-  //   console.log(nfts.result);
-  //   const nftArr = [];
-  //   for (var i = 0; i < nfts.result.length; i++) {
-  //     const nft = nfts.result[i];
-  //     const mintedTime = await nextNFT.methods.tokenId2MetadataMap(nft.token_id).call();
-  //     const words = await nextNFT.methods.getWords(nft.token_id).call();
-  //     nft.metadata = {mintedTime, words};
-  //     nftArr.push(nft);
-  //   }
-  //   setAllNFTInfos(nftArr);
-  //   setIsLoadingNext(false);
-  // });
-  const getDataFromContract = (offset, limit) => {
+  const getDataFromMoralis = (contractAddr, offset, limit) => {
     setIsLoadingNext(true);
-    if (offset - limit < 0) {
-      limit = offset;
-    }
-
-    const nftArr = [];
-    for (var i = offset; i >= offset - limit; i--) {
-      nextNFT.methods.tokenByIndex(i).call().then(async (tokenId) => {
-        const nft = {token_id: tokenId};
-        const tokenURI = await nextNFT.methods.tokenURI(tokenId).call();
-        const owner = await nextNFT.methods.ownerOf(tokenId).call();
-        const mintedTime = await nextNFT.methods.tokenId2MetadataMap(tokenId).call();
-        const words = await nextNFT.methods.getWords(tokenId).call();
-        nft.owner_of = owner;
-        nft.token_uri = tokenURI;
-        nft.metadata = {mintedTime, words};
-        nftArr.push(nft)
-        if (nftArr.length === limit) {
-          setAllNFTInfos(nftArr);
-          setIsLoadingNext(false);
-        }
-      });
-    }
-  }
-
-  const getMyOwnNFTs = () => {
-    setIsLoadingNext(true);
-    
-    const nftArr = [];
-    nextNFT.methods.balanceOf(account).then(balance => {
-      balance = parseInt(balance);
-      for (var i = 0; i < balance; i++) {
-        nextNFT.methods.tokenOfOwnerByIndex(account, i).call().then(async (tokenId) => {
-          const nft = {token_id: tokenId};
-          const tokenURI = await nextNFT.methods.tokenURI(tokenId).call();
-          const owner = await nextNFT.methods.ownerOf(tokenId).call();
-          const mintedTime = await nextNFT.methods.tokenId2MetadataMap(tokenId).call();
-          const words = await nextNFT.methods.getWords(tokenId).call();
-          nft.owner_of = owner;
-          nft.token_uri = tokenURI;
-          nft.metadata = {mintedTime, words};
-          nftArr.push(nft);
-          if (nftArr.length === balance) {
-            setAllNFTInfos(nftArr);
-            setIsLoadingNext(false);
-          }
-        });
+    const options = { chain: chainId, address: contractAddr, offset, limit };
+    Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
+      console.log(nfts.result);
+      const nftArr = [];
+      for (var i = 0; i < nfts.result.length; i++) {
+        const nft = nfts.result[i];
+        const metadata = await nextNFT.methods.tokenId2MetadataMap(nft.token_id).call();
+        nft.metadata = metadata;
+        nftArr.push(nft);
       }
+      setAllNFTInfos(nftArr);
+      setIsLoadingNext(false);
     });
   }
-
   useEffect(() => {
     const fetchData = () => {
       Moralis.Web3.enableWeb3().then(async (web3) => {
-        if (chainId == null) {
-          return;
-        }
         const nextNFTContract = new web3.eth.Contract(NextNFTInfo.abi, NextNFTInfo.address);
 
         setNextNFT(nextNFTContract);
         
-        if (onlyMe) {
-          setIsLoadingNext(true);
-    
-          const nftArr = [];
-          nextNFTContract.methods.balanceOf(account).then(balance => {
-            balance = parseInt(balance);
-            for (var i = 0; i < balance; i++) {
-              nextNFTContract.methods.tokenOfOwnerByIndex(account, i).call().then(async (tokenId) => {
-                const nft = {token_id: tokenId};
-                const tokenURI = await nextNFTContract.methods.tokenURI(tokenId).call();
-                const owner = await nextNFTContract.methods.ownerOf(tokenId).call();
-                const mintedTime = await nextNFTContract.methods.tokenId2MetadataMap(tokenId).call();
-                const words = await nextNFTContract.methods.getWords(tokenId).call();
-                nft.owner_of = owner;
-                nft.token_uri = tokenURI;
-                nft.metadata = {mintedTime, words};
-                nftArr.push(nft);
-                if (nftArr.length === balance) {
-                  setAllNFTInfos(nftArr);
-                  setIsLoadingNext(false);
-                }
-              });
-            }
-          });
-        } else {
-          nextNFTContract.methods.totalSupply().call().then(nftNumber => {
-            setTotalSupply(parseInt(nftNumber));
-            if (chainId != null) {
-              setIsLoadingNext(true);
-              const offset = parseInt(nftNumber);
-              var limit = 10;
-              if (offset - limit < 0) {
-                limit = offset;
-              }
-              if (limit === 0) {
-                setIsLoadingNext(false);
-              }
-              console.log(nftNumber, offset, limit);
-              const nftArr = [];
-              for (var i = offset - 1; i >= offset - limit; i--) {
-                nextNFTContract.methods.tokenByIndex(i).call().then(async (tokenId) => {
-                  const nft = {token_id: tokenId};
-                  const tokenURI = await nextNFTContract.methods.tokenURI(tokenId).call();
-                  const owner = await nextNFTContract.methods.ownerOf(tokenId).call();
-                  const mintedTime = await nextNFTContract.methods.tokenId2MetadataMap(tokenId).call();
-                  const words = await nextNFTContract.methods.getWords(tokenId).call();
-                  nft.owner_of = owner;
-                  nft.token_uri = tokenURI;
-                  nft.metadata = {mintedTime, words};
-                  nftArr.push(nft)
-                  if (nftArr.length === limit) {
-                    setAllNFTInfos(nftArr);
-                    setIsLoadingNext(false);
-                  }
-                });
-              }
-            }
-          });
-        }
+        nextNFTContract.methods.totalSupply().call().then(nftNumber => {
+          setTotalSupply(parseInt(nftNumber));
+        });
+
+        nextNFTContract.methods.pricePerWord().call().then(pricePerWord => {
+          setPricePerWord(new BigNumber(pricePerWord));
+        });
+
         nextNFTContract.methods.basePrice().call().then(basePrice => {
           setBasePrice(new BigNumber(basePrice));
         });
+
+        nextNFTContract.methods.plusPercent().call().then(plusPercent => {
+          setPlusPercent(parseInt(plusPercent));
+        });
+
+        nextNFTContract.methods.feePercent().call().then(feePercent => {
+          setFeePercent(parseInt(feePercent));
+        });        
+
+        if (chainId != null) {
+          setIsLoadingNext(true);
+          const options = { chain: chainId, address: NextNFTInfo.address, offset: 0, limit: 10 };
+          Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
+            console.log(nfts.result);
+            const nftArr = [];
+            for (var i = 0; i < nfts.result.length; i++) {
+              const nft = nfts.result[i];
+              const metadata = await nextNFTContract.methods.tokenId2MetadataMap(nft.token_id).call();
+              nft.metadata = metadata;
+              nftArr.push(nft);
+            }
+            setAllNFTInfos(nftArr);
+            setIsLoadingNext(false);
+          });
+        }
       })
     };
     
     fetchData();
-  }, [Moralis, account, totalSupply, chainId, onlyMe]);
+    if (chainId != null && chainId !== '0x5') {
+      message.warning('Please switch Goerli network for testing.');
+    }
+  }, [Moralis, account, totalSupply, chainId]);
 
   useEffect(() => {
     setCurrentImg(canvasRef.current);
-    setCurrentNewImg(canvasRef1.current);    
+    setCurrentNewImg(canvasRef1.current);
   }, [canvasRef, canvasRef1]);
-
-  const hashToken = (account) => {
-    return Buffer.from(ethers.utils.solidityKeccak256(['address'], [account]).slice(2), 'hex')
-  }
-  const merkleTree = new MerkleTree(WhiteList.map(wlAccount => hashToken(wlAccount)), keccak256, { sortPairs: true });
-  console.log('merkel root', merkleTree.getHexRoot());
   
-  const isEthereum = () => {
-    return chainId === '0x1' || chainId === '0x4';
-  }
+  // setTimeout(() => {
+  //   setMintPrice();
+  // }, 15000);
   
   const showMintNFTDialog = () => {
-    if (isEthereum()) {
-      setMintVisibility(true);
-    } else {
-      message.warning('Only Ethereum network can mint NFT.');
-    }
+    setMintVisibility(true);
   }
 
   const showBatchBurnDialog = () => {
@@ -333,7 +211,7 @@ function NFTBalance() {
   }
 
   const changePage = (page, pageSize) => {
-    getDataFromContract(totalSupply - (page - 1) * pageSize, pageSize);
+    getDataFromMoralis(NextNFTInfo.address, (page - 1)*pageSize, pageSize);
   }
 
   async function transfer() {
@@ -355,28 +233,6 @@ function NFTBalance() {
         //alert(e.message);
         setIsPending(false);
       });
-  }
-
-  const traverseChains = () => {
-    setIsPending(true);
-    const endpointFee = new BigNumber(10).shiftedBy(15);
-    nextNFT.methods.traverseChains(parseInt(destChain), parseInt(nftToSend.token_id)).send({from: account, value: '0x' + endpointFee.toString(16)})
-    .on('transactionHash', function(hash){
-      console.log(hash);
-    })
-    .on('receipt', function(receipt){
-      console.log(receipt);
-      setIsPending(false);
-      setTraverseChainVisible(false);
-      nextNFT.methods.totalSupply().call().then(nftNumber => {
-        setTotalSupply(parseInt(nftNumber));
-        getDataFromContract(totalSupply, 10);
-      });
-    })
-    .on('error', function(error, receipt) { 
-      console.log(error, receipt);
-      setIsPending(false);
-    });
   }
  
   const handleTransferClick = (nft) => {
@@ -404,6 +260,20 @@ function NFTBalance() {
       img.crossOrigin = "Anonymous";
       setCanvasWidth(img.width);
       setCanvasHeight(img.height);
+      // var c = CI.loadImgToCanvas(img, {canvas: currentNewImg, width: img.width, height: img.height, viewWidth: viewSize, viewHeight: viewSize, backgroundColor: "#fff"});  // 
+      // var o = {
+      //   width: c.width,
+      //   height: c.height,
+      //   img: img,
+      //   canvas: {
+      //     img: c.canvas
+      //   }
+      // };
+
+      // 加载其他图层
+      // o.canvas.bg = CI.createBgCanvas(o.width, o.height, viewSize, viewSize);
+      // o.canvas.cover = CI.createCanvas(o.width, o.height, viewSize, viewSize, "cover");
+      // o.canvas.cover.className = "js_cover";
       
       CI.createCharImg(currentImg, {
         threshold: threshold/100,
@@ -411,7 +281,7 @@ function NFTBalance() {
         indexTable: [],
         renderTable: [],
         img: img,
-        wordList: [...selectedWords, ...localImgs],
+        wordList: selectedWords.filter(word => !usedWords.includes(word)),
         onprogress: function() {
         },
         onended: function() {
@@ -422,9 +292,26 @@ function NFTBalance() {
     })
   }
 
-  const burnNFTAndRefund = (nft) => {
+  const burnNFT = (nft) => {
     setIsPending(true);
-    nextNFT.methods.burnAndRefund(parseInt(nft.token_id)).send({from: account})
+    nextNFT.methods.burn(parseInt(nft.token_id)).send({from: account})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+    })
+    .on('receipt', function(receipt){
+      console.log(receipt);
+      setIsPending(false);
+    })
+    .on('error', function(error, receipt) { 
+      console.log(error, receipt);
+      setIsPending(false);
+    });
+  }
+
+  const buyNFT = (nft) => {
+    setIsPending(true);
+    const buyAmount = '0x' + new BigNumber(nft.metadata.cost).multipliedBy(10000 + plusPercent).div(10000).toString(16);
+    nextNFT.methods.buy(parseInt(nft.token_id)).send({from: account, value: buyAmount})
     .on('transactionHash', function(hash){
       console.log(hash);
     })
@@ -450,11 +337,6 @@ function NFTBalance() {
     setPullUpVisible(true);
   }
 
-  const traverseNFT2AnotherChain = (nft) => {
-    setNftToSend(nft);
-    setTraverseChainVisible(true);
-  }
-
   const pullUpNFTValue = () => {
     setIsPending(true);
     nextNFT.methods.pullUp(parseInt(nftToPull.token_id), '0x' + targetPrice.toString(16)).send({from: account, value: '0x' + pullUpFee.toString(16)})
@@ -471,26 +353,30 @@ function NFTBalance() {
     });
   }
 
+  const checkMotherNFT = (nft) => {
+    window.open(`${getExplorer(chainId)}nft/${nft.metadata.baseNFT}/${nft.metadata.baseTokenId}`, "_blank");
+  }
+  const changeExtraMintFee = (v) => {
+    setExtraMintFee(new BigNumber(v.target.value).shiftedBy(18));
+  }
+
   async function mintNFT() {
-    const totalCost = '0x' + basePrice.toString(16);
+    const addedPayedWords = selectedWords.filter(word => !freeWords[word]).filter(word => !usedWords.includes(word));
+    const wordsCost = pricePerWord.multipliedBy(addedPayedWords.length);
+    const nftCost = basePrice.plus(extraMintFee);
+    const totalCost = '0x' + nftCost.plus(wordsCost).toString(16);
     setIsPending(true);
     let dataUrl = currentImg.toDataURL("image/png");
     const file = new Moralis.File(selectedNFT.token_address + '_' +  selectedNFT.token_id, {base64 : dataUrl});
     await file.saveIPFS();
     console.log(file._hash);    
-    const proof = merkleTree.getHexProof(hashToken(account));
-    nextNFT.methods.mint(selectedWords, file._hash, proof).send({from: account, value: totalCost})
+    nextNFT.methods.mint(selectedNFT.token_address, selectedNFT.token_id, selectedWords, file._hash).send({from: account, value: totalCost})
     .on('transactionHash', function(hash){
       console.log(hash);
     })
     .on('receipt', function(receipt){
       console.log(receipt);
       setIsPending(false);
-      setMintVisibility(false);
-      nextNFT.methods.totalSupply().call().then(nftNumber => {
-        setTotalSupply(parseInt(nftNumber));
-        getDataFromContract(totalSupply, 10);
-      });
     })
     .on('error', function(error, receipt) { 
       console.log(error, receipt);
@@ -499,51 +385,36 @@ function NFTBalance() {
   }
 
   const selectNFTTypeChange = (nftAddr) => {
-    if (nftAddr === '0') {
-      setAddressInputVisible(true);
-      setImportImgVisible(false);
-      if (inputNFTAddress !== '') {
-        loadNFTs(inputNFTAddress);
-      }
-    } else if (nftAddr === '1') {
-      setImportImgVisible(true);
-      setAddressInputVisible(false);
-    } else {
-      setAddressInputVisible(false);
-      setImportImgVisible(false);
-      loadNFTs(nftAddr);
-    }
-  };
-
-  const changeNFTAddress = (nftAddrEvent) => {
-    const nftAddr = nftAddrEvent.target.value;
-    if (nftAddr.length === 42) {
-      setInputNFTAddress(nftAddr);
-      loadNFTs(nftAddr);
-    }
-  }
-
-  const loadNFTs = (nftAddr) => {
     setSelectedNFTType(nftAddr);
     setIsLoading(true);
-    const options = { address: account, chain: IsMainnet ? '0x1' : '0x4', token_address: nftAddr };
+    const options = { address: account, chain: chainId, token_address: nftAddr };
     Moralis.Web3API.account.getNFTsForContract(options).then(async (nfts) => {
       console.log(nfts.result);
-      if (nfts.result.length === 0) {
-        message.warning('You have no NFT in this NFT contract.');
-      }
       const nftArr = [];
       for (var i = 0; i < nfts.result.length; i++) {
         const nft = nfts.result[i];
-        nft.bMinted = false;
+        const bMinted = await nextNFT.methods.mintedBaseNFTMap(nftAddr, nft.token_id).call();
+        nft.bMinted = bMinted;
+        console.log(nft.token_id, bMinted);
         nftArr.push(nft);
       }
-      setMintableNFTs([...selfImages, ...nftArr]);
+      setMintableNFTs(nftArr);
       setIsLoading(false);
     });
-  }
+  };
 
-  const selectWordChange = (words) => {    
+  const selectWordChange = (words) => {
+    const addedPayedWords = words.filter(word => !freeWords[word]);
+    addedPayedWords.forEach(word => {
+      nextNFT.methods.payedWord2TokenIdMap(word).call().then(tokenId => {
+        if (tokenId > 0) {
+          usedWords.push(word);
+          setUsedWords(usedWords);
+        }
+        const finalPayedWords = addedPayedWords.filter(word => !usedWords.includes(word));
+        setWordsTotalCost(pricePerWord.multipliedBy(finalPayedWords.length));
+      });
+    });
     setSelectedWords(words);
   }
 
@@ -557,78 +428,13 @@ function NFTBalance() {
     generateNFT(selectedNFT);
   }
 
-  const changeDestinationChain = (v) => {
-    if (chainMap[chainId] === v) {
-      message.warning('Can NOT select the same chain to tranverse.');
-    } else {
-      setDestChain(v);
-    }
-  }
-
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('You can only open JPG/PNG file!');
-    }
-    return isJpgOrPng;
-  }
-
-  const openImage = () => {
-    imgFile.current.click();
-  }
-  const onImageChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      let img = event.target.files[0];
-      console.log(img);
-      if (img.type !== 'image/jpeg' && img.type !== 'image/png') {
-        message.warning('Please select jpeg/png file');
-        return;
-      }
-      const url = URL.createObjectURL(img);
-      const selfImage = {};
-      selfImage.token_uri = url;
-      selfImage.token_id = 'localImage_' + selfImages.length;
-      selfImage.bMinted = false;
-      const images = [selfImage, ...selfImages];      
-      setSelfImages(images);
-      const nfts = [selfImage, ...mintableNFTs];
-      setMintableNFTs(nfts);
-    }
-  }
-  const openLocalImages = () => {
-    localImgFiles.current.click();
-  }
-  const onLocalImagesChange = (event) => {
-    if (event.target.files && event.target.files.length > 0) {
-      var imgs = [];
-      for (var i = 0; i < event.target.files.length; i++) {
-        let img = event.target.files[i];
-        if (img.type !== 'image/jpeg' && img.type !== 'image/png') {
-          continue;
-        }
-        imgs = [...imgs, img];
-      }
-      var imgCanvas = [];
-      imgs.forEach(img => {
-        const url = URL.createObjectURL(img);
-        CI.openImgFile(img, {orientation: false}, function(err, canvas) {
-          canvas.url = url;
-          //imgCanvas.push(canvas);
-          imgCanvas = [...imgCanvas, canvas];
-          if (imgCanvas.length === imgs.length) {
-            setLocalImgs(imgCanvas);
-          }
-        });
-      })
-    }
-  }
   return (
     <div style={{ padding: "15px", maxWidth: "1030px", width: "100%" }}>
       <h1>
         NEXT NFTs{' '} 
         <Checkbox checked={onlyMe} onChange={e => setOnlyMe(e.target.checked)}>Only Me</Checkbox>
         <Button type='primary' onClick={() => showMintNFTDialog()}>Mint NFT</Button>
-        <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Next NFT</Button>
+        <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Mint/Buy/Burn/PullUp</Button>
       </h1>
       <div style={styles.NFTs}>
         <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={10} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
@@ -636,20 +442,30 @@ function NFTBalance() {
           {AllNFTInfos != null && AllNFTInfos.map((nft, index) => {
               const bMine = account != null && nft.owner_of.toLowerCase() === account.toLowerCase();
               if (onlyMe && !bMine) return ''; 
+              const latestPrice = nft.metadata != null ? new BigNumber(nft.metadata.cost).shiftedBy(-18).toNumber() : 0;
               return (
                 <Card
                   hoverable
                   actions={bMine ? [                    
-                    <Tooltip title="Transfer NFT to another account">
+                    <Tooltip title="Transfer NFT">
                       <SendOutlined onClick={() => handleTransferClick(nft)}/>
                     </Tooltip>,         
-                    <Tooltip title="Traverse NFT to another chain">
-                      <ToTopOutlined onClick={() => traverseNFT2AnotherChain(nft)} />
+                    <Tooltip title="Pull up the value of NFT">
+                      <ToTopOutlined onClick={() => pullUpValueOfNFT(nft)} />
                     </Tooltip>, 
-                    <Tooltip title="Burn and Refund">
-                      <FireOutlined onClick={() => burnNFTAndRefund(nft)} />
+                    <Tooltip title="Burn">
+                      <FireOutlined onClick={() => burnNFT(nft)} />
+                    </Tooltip>,           
+                    <Tooltip title="Check mother NFT">
+                      <ForkOutlined onClick={() => checkMotherNFT(nft)} />
                     </Tooltip>, 
-                  ] : [      
+                  ] : [                      
+                    <Tooltip title="Buy this NFT, latest price+5%">
+                      <ShoppingCartOutlined onClick={() => buyNFT(nft)} />
+                    </Tooltip>,         
+                    <Tooltip title="Check mother NFT">
+                      <ForkOutlined onClick={() => checkMotherNFT(nft)} />
+                    </Tooltip>, 
                   ]}
                   style={{ width: 300, border: "2px solid #e7eaf3" }}
                   cover={
@@ -663,9 +479,10 @@ function NFTBalance() {
                   }
                   key={index}
                 >
-                  <Meta title={'NEXT NFT #' + nft.token_id} 
+                  <Meta title={nft.name + ' #' + nft.token_id} 
                     description={
-                    <div style={styles.desc}>                      
+                    <div style={styles.desc}>
+                      <Text>Latest Price: <Text strong>{latestPrice} eth</Text></Text>
                       <Address avatar='left' size={6} copyable style={{ fontSize: "20px" }} address={nft.owner_of}/>
                     </div>
                     } />
@@ -687,26 +504,6 @@ function NFTBalance() {
       </Modal>
 
       <Modal
-        title={`Traverse ${NextNFTInfo?.name || "NFT"} to another chain`}
-        visible={traverseChainVisible}
-        onCancel={() => setTraverseChainVisible(false)}
-        onOk={() => traverseChains()}
-        confirmLoading={isPending}
-        okText="Send"
-      >
-        <div style={{ width: '100%', height: 20, marginButtom: '20px' }}>
-          Please select the destination chain
-        </div>
-        <Select
-          allowClear
-          style={{ width: '100%', marginButtom: '20px' }}
-          onChange={changeDestinationChain}
-        >
-          {IsMainnet ? MainChains : TestChains}
-        </Select>
-      </Modal>
-
-      <Modal
         title={`Pull up the value of NFT`}
         visible={pullUpVisible}
         onCancel={() => setPullUpVisible(false)}
@@ -720,27 +517,31 @@ function NFTBalance() {
       </Modal>
       
       <Modal
-        title="Rule of NEXT NFT"
+        title="Rule of Mint/Buy/Burn NEXT NFT"
         visible={ruleVisible}
         onCancel={() => setRuleVisibility(false)}
         onOk={() => setRuleVisibility(false)}
         confirmLoading={isPending}
         width='600px'
       >
-        <Text>1) Only can mint NFT on Ethereum.</Text><p/>
-        <Text>2) Can traverse NFT among <Text strong>Ethereum/BSC/Polygon/Avalanch</Text> now. This functionality is based on <Text strong>LayerZero protocol</Text>.</Text><p/>
-        <Text>3) Only can burn NFT which is minted in same round which will last <Text strong>7 days</Text>.</Text> <p/>
-        <Text>4) When burn NFT, you can refund your cost. It's same as <Text strong>ERC721r protocol</Text>.</Text> <p/>      
-        <Text>5) Total supply of Next NFT is <Text strong>10240</Text>.</Text> <p/>        
+        <Text>1) If you mint new NFT with M payment words, it will cost you <Text strong>0.05 + 0.005*M</Text> ETH at least.</Text><p/>
+        <Text>2) You also can <Text strong>specify a price</Text> when mint, and the specified price should be larger than 0.05 ETH.</Text><p/>
+        <Text>3) Anyone who pays <Text strong>+5%</Text> of your NFT's current price, will get your Next NFT.</Text> <p/>
+        <Text>4) The platform will charge <Text strong>5%</Text> of the difference in price as a commission.</Text> <p/>
+        <Text>5) The current owner of mother NFT will charge <Text strong>5%</Text> of the difference in price as a commission.</Text> <p/>
+        <Text>6) The NEXT NFT could be burned, and if burned, it could be minted by mother NFT again, and the words in this NFT also could be merged again.</Text><p/>
+        <Text>7) The owner could pull up the value of the NEXT NFT, and only need to pay the fee of gap price.</Text><p/>        
       </Modal>      
 
       <Modal
-        title={`Mint ${NextNFTInfo?.name || "NFT"} (Current mint price: ${basePrice.shiftedBy(-18).toString()} ETH)`}
+        title={`Mint ${NextNFTInfo?.name || "NFT"} `}
         visible={mintVisible}
         onCancel={() => setMintVisibility(false)}
         confirmLoading={isPending}
         footer={[
           <div style={styles.footer}>
+            <Text>(Current Lowest Mint Price: ${basePrice.plus(extraMintFee).plus(wordsTotalCost).shiftedBy(-18).toNumber()} ETH)</Text>
+            <Input style={{width: '40%'}} addonBefore="Extra Mint Fee" addonAfter="eth" defaultValue="0" onChange={(v) => changeExtraMintFee(v)}/>,
             <Button type='primary' loading={isPending} onClick={() => mintNFT()}>Mint NFT</Button>
           </div>
           
@@ -748,7 +549,25 @@ function NFTBalance() {
         width='700px'
       > 
         <div style={{ width: '100%', height: 20, marginButtom: '20px' }}>
-          Step 1: import image from your NFT or local file, and select one
+          Step 1: select or input your words
+        </div>
+        <div style={{ width: '100%', height: 20, fontSize: 8, fontStyle: "italic" }}>
+          (If not marked free, each word costs {pricePerWord.shiftedBy(-18).toNumber()} eth. And one word only could be merged in one Next NFT.)
+        </div>
+        <Select mode="tags" 
+          tokenSeparators={[',']}
+          allowClear
+          style={{ width: '100%', marginButtom: '20px' }}
+          placeholder="Please select or input your words which will merged with the NFT below"
+          onChange={selectWordChange}
+        >
+          {Words}
+        </Select>
+        <div style={{ width: '100%', height: 20, marginButtom: '20px' }}>
+          {usedWords.length > 0 ? ("'" + usedWords + "' is registered, can't be merged!") : ""}
+        </div>
+        <div style={{ width: '100%', height: 20, marginButtom: '20px' }}>
+          Step 2: select original NFT
         </div>
         <div style={{ width: '100%', height: 20, fontSize: 8, fontStyle: "italic" }}>
           (It will list all NFTs belong to you, then you can select one of them to merge.)
@@ -762,19 +581,13 @@ function NFTBalance() {
         >
           {OriginalNFTs}
         </Select>
-        {
-          addressInputVisible ? <Input defaultValue={inputNFTAddress} style={{width: '100%', marginTop: '10px'}} addonBefore="NFT Address" onChange={(v) => changeNFTAddress(v)}/> : ''
-        }
-        {
-          importImgVisible ? <div style={{ marginTop: '10px' }}>
-                              <input type="file" ref={imgFile} style={{ display: 'none' }} onChange={(e) => onImageChange(e)} />  
-                              <Button type='primary' icon={<PictureOutlined />} onClick={() => openImage()}>Open Image</Button>
-                            </div> : ''
-        }
+        <div style={{ width: '100%', height: 20, marginTop: '20px' }}>
+          Step 3: select the NFT you wanna to merge, then click the Mint button
+        </div>
         <div style={styles.NFTs}>
           <Skeleton active loading={isLoading}>
             {mintableNFTs != null && mintableNFTs.map((nft, index) => {    
-                const imageStr = nft.metadata != null ? JSON.parse(nft.metadata).image : nft.token_uri;
+                const imageStr = JSON.parse(nft.metadata).image;
                 if (imageStr.indexOf(ipfsPreStr) >= 0) {
                   const image = imageStr.substr(ipfsPreStr.length);
                   const imageUrl = ipfsGateWay + image;   
@@ -814,39 +627,8 @@ function NFTBalance() {
               })}
           </Skeleton>
         </div>
-        <div style={{ width: '100%', height: 20, marginTop: '20px' }}>
-          Step 2: select or input your favorite words which will merged with the selected image above
-        </div>
-        <Select mode="tags" 
-          tokenSeparators={[',']}
-          allowClear
-          style={{ width: '100%', marginButtom: '20px' }}
-          onChange={selectWordChange}
-        >
-          {Words}
-        </Select>
-        <div style={{ width: '100%', height: 20, marginTop: '20px' }}>
-          Step 3: import local images which will merged with the selected image above
-        </div>
-        <div style={{ marginTop: '10px', marginButtom: '10px' }}>
-          <input type="file" multiple ref={localImgFiles} style={{ display: 'none' }} onChange={(e) => onLocalImagesChange(e)} />  
-          <Button type='primary' icon={<PictureOutlined />} onClick={() => openLocalImages()}>Open Local Images</Button>
-        </div>
-        <div style={styles.NFTs}>
-          <Skeleton active loading={isLoading}>
-            {localImgs.map((img, index) => {   
-                return (
-                  <Image 
-                    preview={false} 
-                    src={img.url} 
-                    style={{ height: "100px", width: '100px' }} 
-                  />
-                );
-              })}
-          </Skeleton>
-        </div>
         <div style={styles.newNFTs}>
-          <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} style={{width: 500, height: 500 * (canvasHeight/canvasWidth), marginLeft:"auto", marginRight:"auto"}}></canvas>    
+          <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} style={{width: 500, height: 500, marginLeft:"auto", marginRight:"auto"}}></canvas>    
           <div style={styles.threshold}>
             <div style={{width: '20%'}}>Contour Threshold</div>
             <Slider style={{width: '80%'}} range={false} defaultValue={50} tipFormatter={value => `${value}%`} onAfterChange={v => changeThreshold(v)}/>

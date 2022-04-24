@@ -11,8 +11,8 @@ var CI = (function() {
 		minWidth: 150,
 		minHeight: 150,
 		fontFamily: ["黑体"],	// 字体
-		minFontSize: 12,	// 基本填充大小
-		fontZoom: 10,	// 最大填充倍数
+		minFontSize: 8,	// 基本填充大小
+		fontZoom: 5,	// 最大填充倍数
 		fontColor: "#000000",	// 文字颜色
 		square: false,	// 拉伸填充图案
 		useOnes: false,	// 填充元素只使用一次
@@ -908,9 +908,9 @@ var CI = (function() {
 				viewSize: 500,
 				threshold: 0.5,	// 轮廓阈值
 				fontFamily: ["黑体"],	// 字体
-				fontSize: 12,	// 基本字体大小
+				fontSize: 8,	// 基本字体大小
 				fontZoom: 5,	// 最大字体大小倍数
-				vertical: 0,	// 竖排文字比例
+				vertical: 0.3,	// 竖排文字比例
 				fontColor: "#000000",	// 文字颜色
 				backgroundColor: "#ffffff",	// 背景色
 				shadowColor: "#000000",	// 原图阴影颜色

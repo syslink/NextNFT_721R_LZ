@@ -138,8 +138,7 @@ const App = ({ isServerInfo }) => {
           </div>
           <MenuItems />
           <div style={styles.headerRight}>
-            <Button type='dashed' shape="round" icon={<GiftOutlined />} onClick={() => donate()}>DONATE</Button>
-            <Button type='primary' onClick={() => claimNFT()}>Claim NFTs for testing</Button>
+            {chainId === '0x4' ? <Button type='primary' onClick={() => claimNFT()}>Claim NFTs for testing</Button> : ''}
             <Chains />
             {/* <TokenPric
               address="0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"

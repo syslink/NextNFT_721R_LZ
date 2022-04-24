@@ -27,28 +27,8 @@ const menuItems = [
     icon: <ETHLogo />,
   },
   {
-    key: "0x539",
-    value: "Local Chain",
-    icon: <ETHLogo />,
-  },
-  {
-    key: "0x3",
-    value: "Ropsten Testnet",
-    icon: <ETHLogo />,
-  },
-  {
     key: "0x4",
     value: "Rinkeby Testnet",
-    icon: <ETHLogo />,
-  },
-  {
-    key: "0x2a",
-    value: "Kovan Testnet",
-    icon: <ETHLogo />,
-  },
-  {
-    key: "0x5",
-    value: "Goerli Testnet",
     icon: <ETHLogo />,
   },
   {
@@ -68,7 +48,7 @@ const menuItems = [
   },
   {
     key: "0x13881",
-    value: "Mumbai",
+    value: "Mumbai (Polygon Testnet)",
     icon: <PolygonLogo />,
   },
   {
@@ -83,14 +63,14 @@ const menuItems = [
   },
 ];
 
-const filterChains = {'0x5': true}
-
 function Chains() {
   const { switchNetwork, chainId, chain } = useChain();
   const { isAuthenticated } = useMoralis();
   const [selected, setSelected] = useState({});
 
-  console.log("chain", chain);
+  const IsMainnet = window.location.origin.indexOf("test") < 0 && window.location.origin.indexOf("localhost") < 0;
+  const filterChains = {"mainnet": {'0x1': true, '0x38': true, '0x89': true, '0xa86a': true}, 
+                        "testnet": {'0x4': true, '0x61': true, '0x13881': true, '0xa869': true}}
 
   useEffect(() => {
     if (!chainId) return null;
@@ -107,7 +87,7 @@ function Chains() {
   const menu = (
     <Menu onClick={handleMenuClick}>
       {menuItems.map((item) => (
-        filterChains[item.key] ?
+        filterChains[IsMainnet ? "mainnet" : "testnet"][item.key] ?
         <Menu.Item key={item.key} icon={item.icon} style={styles.item}>
           <span style={{ marginLeft: "5px" }}>{item.value}</span>
         </Menu.Item> : ''

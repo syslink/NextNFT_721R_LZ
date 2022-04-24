@@ -22,12 +22,12 @@ function MenuItems() {
         <NavLink to="/quickstart">(📜,🌋) Tanga PEOPLE</NavLink>
       </Menu.Item> */}
       <Menu.Item key="/nextNFT">
-        <NavLink to="/nextNFT">Next</NavLink>
+        <NavLink to="/nextNFT">Next NFT</NavLink>
       </Menu.Item>
-      <Menu.Item key="/nextDAO">
+      {/* <Menu.Item key="/nextDAO">
         <NavLink to="/nextDAO">DAO Next</NavLink>
       </Menu.Item>
-      {/* <Menu.Item key="/wallet">
+      <Menu.Item key="/wallet">
         <NavLink to="/wallet">👛 Wallet</NavLink>
       </Menu.Item>
       <Menu.Item key="/1inch">
