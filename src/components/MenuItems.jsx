@@ -18,9 +18,9 @@ function MenuItems() {
       }}
       defaultSelectedKeys={[pathname]}
     >
-      {/* <Menu.Item key="/quickstart">
-        <NavLink to="/quickstart">(📜,🌋) Tanga PEOPLE</NavLink>
-      </Menu.Item> */}
+      <Menu.Item key="/quickstart">
+        <NavLink to="/quickstart">Introduce</NavLink>
+      </Menu.Item>
       <Menu.Item key="/nextNFT">
         <NavLink to="/nextNFT">Next NFT</NavLink>
       </Menu.Item>

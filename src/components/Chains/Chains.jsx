@@ -32,6 +32,26 @@ const menuItems = [
     icon: <ETHLogo />,
   },
   {
+    key: "0x0a",
+    value: "Optimism",
+    icon: <ETHLogo />,
+  },
+  {
+    key: "0x45",
+    value: "Optimism Testnet",
+    icon: <ETHLogo />,
+  },
+  {
+    key: "0xa4b1",
+    value: "Abitrum",
+    icon: <ETHLogo />,
+  },
+  {
+    key: "0xc8",
+    value: "Abitrum Testnet",
+    icon: <ETHLogo />,
+  },
+  {
     key: "0x38",
     value: "Binance",
     icon: <BSCLogo />,
@@ -69,8 +89,8 @@ function Chains() {
   const [selected, setSelected] = useState({});
 
   const IsMainnet = window.location.origin.indexOf("test") < 0 && window.location.origin.indexOf("localhost") < 0;
-  const filterChains = {"mainnet": {'0x1': true, '0x38': true, '0x89': true, '0xa86a': true}, 
-                        "testnet": {'0x4': true, '0x61': true, '0x13881': true, '0xa869': true}}
+  const filterChains = {"mainnet": {'0x1': true, '0x0a': true, '0x38': true, '0x89': true,    '0xa4b1': true, '0xa86a': true}, 
+                        "testnet": {'0x4': true, '0x45': true, '0x61': true, '0x13881': true, '0xc8': true,   '0xa869': true}}
 
   useEffect(() => {
     if (!chainId) return null;

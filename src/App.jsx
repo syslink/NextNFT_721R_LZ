@@ -191,7 +191,7 @@ const App = ({ isServerInfo }) => {
               <Contract />
             </Route>
             <Route path="/">
-              <Redirect to="/nextNFT" />
+              <Redirect to="/quickstart" />
             </Route>
             <Route path="/ethereum-boilerplate">
               <Redirect to="/quickstart" />

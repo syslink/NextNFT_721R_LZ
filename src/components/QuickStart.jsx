@@ -5,9 +5,10 @@ import BigNumber from "bignumber.js";
 import pic1 from '../asset/1.png';
 import pic2 from '../asset/2.png';
 import pic3 from '../asset/3.png';
-import peopleImg from '../asset/people.jpeg';
+import pic4 from '../asset/4.png';
+import pic5 from '../asset/5.png';
 
-import TangaNFTInfo from "../asset/abi/tangaNFT.json";
+// import TangaNFTInfo from "../asset/abi/tangaNFT.json";
 
 const { Text } = Typography;
 
@@ -34,148 +35,71 @@ const styles = {
 };
 
 export default function QuickStart({ isServerInfo }) {
-  const { Moralis } = useMoralis();
-  const [ MintPrice, setMintPrice ] = useState(0);
-  const [ BurnPrice, setBurnPrice ] = useState(0);
-  //const [ TangaNFT, setTangaNFT ] = useState(null);
-
-  Moralis.Web3.enableWeb3().then(web3 => {
-    const tangaNFTContract = new web3.eth.Contract(TangaNFTInfo.abi, TangaNFTInfo.address);
-    //setTangaNFT(tangaNFTContract);
-    tangaNFTContract.methods.getCurrentPriceToMint(1).call().then(mintPrice => {
-      setMintPrice(new BigNumber(mintPrice).shiftedBy(-18).toString());
-    });
-    tangaNFTContract.methods.getCurrentPriceToBurn(1).call().then(burnPrice => {
-      setBurnPrice(new BigNumber(burnPrice).shiftedBy(-18).toString());
-    });
-  });
+  const { Moralis, chainId, account } = useMoralis();
+  const [fromTime, setFromTime] = useState(0);
+  const [endTime, setEndTime] = useState(0);
 
   return (
-    <div style={{ display: "flex", gap: "10px" }}>
+    <div style={{width: '100%', height: '100%'}}>
       <Card
-        style={{...styles.card, width: '65%'}}
+        style={{...styles.card}}
         title={
           <>
-            📝 <Text strong>About Tanga Volcanic</Text>
+            📝 <Text strong>About NextNFT</Text>
           </>
         }
       >
-        <Timeline mode="left" style={styles.timeline}>
-          <Timeline.Item dot="📄">
-            <Text style={styles.text}>
-            On the afternoon of January 15, a violent eruption of a submarine volcano (Hunga Tonga-Hunga Ha'apai) occurred in the Kingdom of Tonga, 
-            an island nation located in the South Pacific, accompanied by a 7.6 magnitude severe earthquake and tsunami.
-            </Text><p/>
-            <Image src={pic1} style={{width: '300px', marginRight: '5px'}} alt=""/>
-            <Image src={pic2} style={{width: '300px', marginRight: '5px'}} alt=""/>
-            {/* <Image src={pic3} style={{width: '300px'}} alt=""/> */}
-          </Timeline.Item>
-
-          <Timeline.Item dot="💿">
-            <Text style={styles.textSubTitle}>
-              General Science
-            </Text><p/>
-            <Text style={styles.text}>
-            (1) Whether this Tonga volcanic eruption led to a global climate impact is not directly related to the magnitude of the earthquake or the damage caused, 
-            but the key indicator is still the sulfur dioxide entering the stratosphere.
-            </Text><p/>
-            <Text style={styles.text}>
-            (2) To have an observable global climate impact, volcanic activity would need to emit at least 2 million tons of sulfur dioxide. 
-            About 400,000 tons of sulfur dioxide has already entered the stratosphere
-            </Text>
-          </Timeline.Item>
-
-          <Timeline.Item dot="🧰">
-            <Text style={styles.textSubTitle}>
-            Impact on global economy and politics
-            </Text><p/>
-            <Text style={styles.text}>
-            (1) In the short term, volcanic eruptions could trigger negative sentiment and speculation on global agricultural markets.
-            </Text><p/>
-            <Text style={styles.text}>
-            (2) In the medium term, volcanic eruptions will exacerbate the divergence of global weather extremes and may lead to an escalation of future El Niño events.
-            </Text><p/>
-            <Text style={styles.text}>
-            (3) In the long term, once volcanic eruptions continue and the sulfur dioxide delivered to the stratosphere breaks the threshold, there is the potential for observable effects on global climate, leading to profound changes in global economics and politics.
-            </Text>
-          </Timeline.Item>        
-        </Timeline>
+        <Text style={styles.text}>
+        NextNFT is next NFT which can be automatically generated from images and text. Everybody could be an artist in Web3 era by using some favorite elements.<p/>
+        Here are some examples for your reference and hopefully become a source of inspiration for your creations.
+        </Text><p/>
+        <Image src={pic1} width={300}/>
+        <Image src={pic2} width={300}/> 
+        <Image src={pic3} width={300}/>
+        <Image src={pic4} width={300}/>
+        <Image src={pic5} width={300}/>
       </Card>
-      <div>
-        <Card
-          style={styles.card}
-          title={
-            <>
-              (📜,📜) <Text strong>Constitution DAO Token($PEOPLE)</Text>
-            </>
-          }
-        >
-          <Timeline mode="left" style={styles.timeline}>
-            <Timeline.Item dot="📜">
-              <Text style={styles.text}>
-              We tried to buy the Constitution in 7 days, raised $40M, onboarded thousands into crypto and educated millions.
-              </Text>
-            </Timeline.Item>
-            <Timeline.Item dot="⚙️">
-              <Text style={styles.text}> 
-              <a target="_blank" rel="noopener noreferrer" href="https://github.com/People-DAO/Audit-Reports">
-              Audit report
-              </a>
-              {' '}for $PEOPLE and the entire @juiceboxETH-v1 contracts is live! No SECURITY ISSUES since{' '}
-              <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/ConstitutionDAO">
-              @ConstitutionDAO
-              </a>
-              {' '}renounced ownership. 
-              </Text>
-            </Timeline.Item>
-            <Timeline.Item dot="📡">
-              <Text style={styles.text}>
-                $PEOPLE has been listed on Binance, OKx......
-              </Text>
-            </Timeline.Item>
-            <Timeline.Item dot="✅" style={styles.text}>
-              <Text>
-              The fees for the transaction will be transferred to the fund address. 
-              </Text>
-              <Text strong>
-              About the fund, 20% is set aside for developers and the remaining 80% can be given to people in the world who have suffered because of the eruption, 
-              and we can make decisions by way of DAO.
-              </Text>
-              <p/>
-              <Image src={peopleImg} style={{width: '200px'}} alt=""/>
-            </Timeline.Item>
-          </Timeline>
-        </Card>
-        <Card
-          style={{ marginTop: "10px", ...styles.card }}
-          title={
-            <>
-              (📜,🌋) <Text strong> Tanga Volcanic NFT (TangaNFT)</Text>
-            </>
-          }
-        >
-          <Timeline mode="left" style={styles.timeline}>
-            <Timeline.Item dot="💿">
-              <Text style={styles.text}>
-              Putting a certain amount of $PEOPLE into the [TangaNFT-$PEOPLE] pool can mint TangaNFT from the pool
-              </Text>
-            </Timeline.Item>
-            <Timeline.Item dot="⚙️">
-              <Text style={styles.text}>
-              Destroying TangaNFT to the pool can obtain a certain amount of $PEOPLE from the [TangaNFT-$PEOPLE] pool
-              </Text>
-            </Timeline.Item>
-            <Timeline.Item dot="💾">
-              <Text style={styles.text}>
-              The current minting of one TangaNFT requires the consumption of {MintPrice} $PEOPLE
-              </Text><p/>
-              <Text style={styles.text}>
-              The current destroying of one TangaNFT can the obtain {BurnPrice} $PEOPLE
-              </Text>
-            </Timeline.Item>
-          </Timeline>
-        </Card>
-      </div>
+      <Card
+        style={{...styles.card}}
+        title={
+          <>
+            🧰 <Text strong>Key Information</Text>
+          </>
+        }
+      >
+          <Timeline.Item dot="📝">
+            <Text style={styles.textSubTitle}>
+            About Mint of NextNFT
+            </Text><p/>
+            <Text style={styles.text}>
+            (1) <a href="https://github.com">Whitelist</a> Round: MAX number of exist NFT is 3 for each account in whitelist.
+            </Text><p/>
+            <Text style={styles.text}>
+            (2) Only can mint NFT on Ethereum. And in same round, when burn NFT, the costs spent on mint will be refunded.
+            </Text><p/>
+            <Text style={styles.text}>
+            (3) Can clone NFT from <Text strong>Ethereum</Text> to <Text strong>BSC/Polygon/Avalanch</Text>.
+            </Text><p/>
+            <Text style={styles.text}>
+            (4) If an NFT has clone on other chains, it can't be transferred to another EOA, unless all clones are sent back to Ethereum.
+            </Text><p/>
+            <Text style={styles.text}>
+            (5) Total supply of Next NFT is <Text strong>10240</Text>.
+            </Text>
+          </Timeline.Item> 
+
+          <Timeline.Item dot="📝">
+            <Text style={styles.textSubTitle}>
+            What to do next?
+            </Text><p/>
+            <Text style={styles.text}>
+            (1) Build DAO when the time is right          
+            </Text><p/>
+            <Text style={styles.text}>
+            (2) Build new projects which has usage scenarios for NextNFT      
+            </Text>
+          </Timeline.Item> 
+      </Card>
     </div>
   );
 }
