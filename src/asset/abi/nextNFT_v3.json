@@ -2,8 +2,8 @@
     "address": "",
 	"multiAddressess": {
         "testnet": {
-            "0x4": "0x50d36c4C1A0f7D52c20d9c6aF423fe7A0Eac1c1B",
-            "0x61": "0xc9B0672a7A3128Ac909Edfb1fC6A41A37b57D86b",
+            "0x4": "0x54fd608c2Fdd52364A9103c2B4fb83EEd66ce2BE",
+            "0x61": "0xb4B73c739521874e542fab9B583360e62FCA2359",
             "0x13881": "0x927314c47CeD94f54bA33A8597448f4C6827eE9c",
             "0xa869": "0x927314c47CeD94f54bA33A8597448f4C6827eE9c"
         },

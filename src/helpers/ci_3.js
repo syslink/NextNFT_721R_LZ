@@ -385,6 +385,7 @@ var CI = (function() {
 			// 解析图片方向时必须使用Filereader的方式解析
 			if (imgurl) {
 				var img = new Image();
+				img.setAttribute("crossOrigin", "Anonymous");
 				img.onload = function () {
 					callback && callback(null, img);
 				};
