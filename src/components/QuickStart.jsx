@@ -72,7 +72,7 @@ export default function QuickStart({ isServerInfo }) {
             About Mint of NextNFT
             </Text><p/>
             <Text style={styles.text}>
-            (1) <a href="https://github.com">Whitelist</a> Round: MAX number of exist NFT is 3 for each account in whitelist.
+            (1) <a href="https://github.com/syslink/NextNFT_721R_LZ/blob/main/src/asset/whiteList.json">Whitelist</a> Round: MAX number of exist NFT is 3 for each account in whitelist.
             </Text><p/>
             <Text style={styles.text}>
             (2) Only can mint NFT on Ethereum. And in same round, when burn NFT, the costs spent on mint will be refunded.
