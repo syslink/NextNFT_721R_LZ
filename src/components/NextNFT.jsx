@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from 'react-dom';
 import { useMoralis } from "react-moralis";
 import { Card, Image, Steps, Tooltip, Slider, Modal, Input, Skeleton, Checkbox, Button, Typography, Select, Pagination, message, InputNumber } from "antd";
-import { FireOutlined, SendOutlined, PictureOutlined, UploadOutlined, MehOutlined, SmileTwoTone, FrownOutlined, StopOutlined, UsergroupAddOutlined } from "@ant-design/icons";
+import { FireOutlined, SendOutlined, PictureOutlined, RollbackOutlined , MehOutlined, SmileTwoTone, FrownOutlined, StopOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 import { CI } from "helpers/ci_3";
 import { getEllipsisTxt } from "../helpers/formatters";
 import BigNumber from "bignumber.js";
@@ -13,6 +13,8 @@ import Address from "./Address/Address";
 import Blockies from "react-blockies";
 import { getExplorer } from "helpers/networks";
 import NextNFTInfo from '../asset/abi/nextNFT_v3.json';
+import NFTClonableBridgeInfo from '../asset/abi/NFTClonableBridge.json';
+import LayerZeroEndpointInfo from '../asset/abi/layerZeroEndpoint.json';
 import WhiteList from '../asset/whiteList.json';
 
 const keccak256 = require('keccak256');
@@ -93,13 +95,15 @@ function NFTBalance() {
   const [ipfsGateWay, setIPFSGateway] = useState('https://gateway.ipfs.io/ipfs/');
   const [ipfsPreStr, setIPFSPreStr] = useState('ipfs://');
   const [nextNFT, setNextNFT] = useState(null);
+  const [nftClonableBridge, setNFTClonableBridge] = useState(null);
+  const [layerZeroEndpoint, setLayerZeroEndpoint] = useState(null);
   const [usedWords, setUsedWords] = useState([]);
   const [pricePerWord, setPricePerWord] = useState(new BigNumber(0));
   const [basePrice, setBasePrice] = useState(new BigNumber(0));
   const [pricePerMinusNFT, setPricePerMinusNFT] = useState(new BigNumber(0));
   const [destChain, setDestChain] = useState(0);
   const [threshold, setShreshold] = useState(50);
-  const [shadowOpacity, setShadowOpacity] = useState(20);
+  const [shadowOpacity, setShadowOpacity] = useState(50);
   const [buyDialogVisible, setBuyDialogVisible] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState(1500);
   const [canvasHeight, setCanvasHeight] = useState(1500);
@@ -116,6 +120,7 @@ function NFTBalance() {
   const [startTokenId, setStartTokenId] = useState(1);
   const [endTokenId, setEndTokenId] = useState(10);
   const [localOrNFTImage, setLocalOrNFTImage] = useState(0);
+  const [hasStoredPayload, setHasStoredPayload] = useState(false);
 
   const canvasRef = React.createRef();
   const canvasRef1 = React.createRef();
@@ -160,7 +165,10 @@ function NFTBalance() {
 
   const nextNFTAddress = NextNFTInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][chainId];   
   NextNFTInfo.address = nextNFTAddress;               
-
+  const nftClonableBridgeAddress = NFTClonableBridgeInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][chainId];   
+  NFTClonableBridgeInfo.address = nftClonableBridgeAddress;   
+  const layerZeroEndpointAddress = LayerZeroEndpointInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][chainId];   
+  LayerZeroEndpointInfo.address = layerZeroEndpointAddress;   
 
   // const options = { chain: chainId, address: contractAddr, offset, limit };
   // Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
@@ -235,8 +243,13 @@ function NFTBalance() {
           return;
         }
         const nextNFTContract = new web3.eth.Contract(NextNFTInfo.abi, NextNFTInfo.address);
-
         setNextNFT(nextNFTContract);
+        
+        const nftClonableBridge = new web3.eth.Contract(NFTClonableBridgeInfo.abi, NFTClonableBridgeInfo.address);
+        setNFTClonableBridge(nftClonableBridge);
+        
+        const layerZeroEndpoint = new web3.eth.Contract(LayerZeroEndpointInfo.abi, LayerZeroEndpointInfo.address);
+        setLayerZeroEndpoint(layerZeroEndpoint);
         
         if (onlyMe) {
           setIsLoadingNext(true);
@@ -245,6 +258,7 @@ function NFTBalance() {
           nextNFTContract.methods.balanceOf(account).call().then(balance => {
             balance = parseInt(balance);
             if (balance === 0) {
+              setAllNFTInfos(nftArr);
               setIsLoadingNext(false);
             }
             for (var i = 0; i < balance; i++) {
@@ -254,9 +268,14 @@ function NFTBalance() {
                 const owner = await nextNFTContract.methods.ownerOf(tokenId).call();
                 const mintedTime = await nextNFTContract.methods.tokenId2MetadataMap(tokenId).call();
                 const words = await nextNFTContract.methods.getWords(tokenId).call();
+                
                 nft.owner_of = owner;
                 nft.token_uri = tokenURI;
                 nft.metadata = {mintedTime, words};
+                if (chainId === '0x1' || chainId === '0x4') {
+                  const clonedChainIds = await nftClonableBridge.methods.checkClone(NextNFTInfo.address, tokenId).call();
+                  nft.clonedChainIds = clonedChainIds;
+                }
                 nftArr.push(nft);
                 if (nftArr.length === balance) {
                   setAllNFTInfos(nftArr);
@@ -276,6 +295,7 @@ function NFTBalance() {
                 limit = offset;
               }
               if (limit === 0) {
+                setAllNFTInfos([]);
                 setIsLoadingNext(false);
               }
               console.log(nftNumber, offset, limit);
@@ -287,9 +307,14 @@ function NFTBalance() {
                   const owner = await nextNFTContract.methods.ownerOf(tokenId).call();
                   const mintedTime = await nextNFTContract.methods.tokenId2MetadataMap(tokenId).call();
                   const words = await nextNFTContract.methods.getWords(tokenId).call();
+                  
                   nft.owner_of = owner;
                   nft.token_uri = tokenURI;
                   nft.metadata = {mintedTime, words};
+                  if (chainId === '0x1' || chainId === '0x4') {
+                    const clonedChainIds = await nftClonableBridge.methods.checkClone(NextNFTInfo.address, tokenId).call();
+                    nft.clonedChainIds = clonedChainIds;
+                  }
                   nftArr.push(nft)
                   if (nftArr.length === limit) {
                     setAllNFTInfos(nftArr);
@@ -314,14 +339,43 @@ function NFTBalance() {
     setCurrentNewImg(canvasRef1.current);    
   }, [canvasRef, canvasRef1]);
 
+  const getChainIdFromEndpointId = (endpointId) => {
+    var peerChainId;
+    Object.keys(chainMap).forEach(function(chainId) {
+      if (chainMap[chainId] === endpointId) peerChainId = chainId;
+    })
+    return peerChainId;
+  }
+
   const hashToken = (account) => {
     return Buffer.from(ethers.utils.solidityKeccak256(['address'], [account]).slice(2), 'hex')
   }
   const merkleTree = new MerkleTree(WhiteList.map(wlAccount => hashToken(wlAccount)), keccak256, { sortPairs: true });
-  console.log('merkel root', merkleTree.getHexRoot());
+  //console.log('merkel root', merkleTree.getHexRoot());
   
   const isEthereum = () => {
     return chainId === '0x1' || chainId === '0x4';
+  }
+
+  const getEthEndpointId = () => {
+    return IsMainnet ? 1 : 10001;
+  }
+
+  const getChainNames = (chainIds) => {
+    var clonedChainNames = '';
+    chainIds.forEach(chainId => {
+      var chainName = '';
+      chainId = parseInt(chainId);
+      if (chainId === 10002)  chainName = 'BSC';
+      else if (chainId === 10006)  chainName = 'Fuji';
+      else if (chainId === 10009)  chainName = 'Mumbai';
+      else if (chainId === 10010)  chainName = 'Arbitrum';
+      else if (chainId === 10011)  chainName = 'Optimism';
+      else return;
+
+      clonedChainNames = clonedChainNames + chainName + ',';
+    })
+    return clonedChainNames;
   }
   
   const showMintNFTDialog = () => {
@@ -366,10 +420,16 @@ function NFTBalance() {
   }
 
   const traverseChains = () => {
+    // if (hasStoredPayload) {
+    //   message.warning("The bridge has been blocked because of failed transaction. Please try it later.");
+    //   return;
+    // }
     setIsPending(true);
-    nextNFT.methods.estimateSendTokensFee(parseInt(destChain), parseInt(nftToSend.token_id), false, ethers.utils.toUtf8Bytes('')).call().then(feeInfo => {
-      const endpointFee = new BigNumber(feeInfo.nativeFee).multipliedBy(2);
-      nextNFT.methods.traverseChains(parseInt(destChain), parseInt(nftToSend.token_id)).send({from: account, value: '0x' + endpointFee.toString(16)})
+    let adapterParams = ethers.utils.solidityPack(['uint16','uint256'], [1, 400000]);
+    nftClonableBridge.methods.estimateSendTokensFee(parseInt(destChain), NextNFTInfo.address, parseInt(nftToSend.token_id), false, adapterParams).call().then(feeInfo => {
+      const endpointFee = new BigNumber(feeInfo.nativeFee);//.multipliedBy(2);
+      console.log(adapterParams, '0x' + endpointFee.toString(16));
+      nftClonableBridge.methods.traverseChains(parseInt(destChain), NextNFTInfo.address, parseInt(nftToSend.token_id), adapterParams).send({from: account, value: '0x' + endpointFee.toString(16)})
       .on('transactionHash', function(hash){
         console.log(hash);
       })
@@ -385,8 +445,17 @@ function NFTBalance() {
     })
     
   }
+
+  const retryPayload = () => {
+    let adapterParams = ethers.utils.solidityPack(['uint16','uint256'], [1, 400000]);
+    layerZeroEndpoint.methods.retryPayload(chainMap[chainId], NextNFTInfo.address, adapterParams);
+  }
  
   const handleTransferClick = (nft) => {
+    if (isEthereum() && nft.clonedChainIds.number > 0) {
+      message.warning("Can't transfer because this NFT has cloned NFT.");
+      return;
+    }
     setNftToSend(nft);
     setVisibility(true);
   }
@@ -492,6 +561,10 @@ function NFTBalance() {
   }
 
   const burnNFTAndRefund = (nft) => {
+    if (nft.clonedChainIds.number > 0) {
+      message.warning("Can't transfer because this NFT has cloned NFT.");
+      return;
+    }
     setIsPending(true);
     nextNFT.methods.burnAndRefund(parseInt(nft.token_id)).send({from: account})
     .on('transactionHash', function(hash){
@@ -536,6 +609,7 @@ function NFTBalance() {
       return;
     }
     setLocalOrNFTImage(2);
+    setIsPending(true);
     const options = { chain: '0x1', address: nftAddressOnETH, offset: startTokenId, limit: endTokenId - startTokenId + 1 };
     Moralis.Web3API.token.getNFTOwners(options).then(async (nfts) => {
       console.log(nfts.result);
@@ -553,39 +627,42 @@ function NFTBalance() {
         tmpSelectedImgs[nft.url] = true;
         imgCanvas = [...imgCanvas, nft];
         if (imgCanvas.length === nfts.result.length) {
+          setIsPending(false);
           setLocalImgs(imgCanvas);
           setSelectedImgs(tmpSelectedImgs);
           setLoadNFTVisible(false);
         }
-          
-        // CI.openImgUrl(nft.url, function(err, img){
-        //   if (err) {
-        //     return alert(err);
-        //   }
-        //   if (img.width === 0 || img.height === 0) return;
-        //   //img.crossOrigin = "Anonymous";
-        //   //const url = window.URL.createObjectURL(img);
-        //   tmpSelectedImgs[nft.url] = true;
-        //   CI.openImgFile(img, {orientation: false}, function(err, canvas) {
-        //     if (err) {
-        //       return alert(err);
-        //     }
-        //     canvas.url = nft.url;
-        //     //imgCanvas.push(canvas);
-        //     imgCanvas = [...imgCanvas, canvas];
-        //     if (imgCanvas.length === nfts.result.length) {
-        //       setLocalImgs(imgCanvas);
-        //       setSelectedImgs(tmpSelectedImgs);
-        //     }
-        //   });
-        // });
       })
     });
   }
 
   const cloneNFT2AnotherChain = (nft) => {
     setNftToSend(nft);
-    setTraverseChainVisible(true);
+    setTraverseChainVisible(true);    
+  }
+
+  const returnNFT2Ethereum = (nft) => {
+    setIsPending(true);
+    const ethereumId = getEthEndpointId();
+    let adapterParams = ethers.utils.solidityPack(['uint16','uint256'], [1, 400000]);
+    console.log(ethereumId, NextNFTInfo.address, parseInt(nft.token_id), false, adapterParams);
+    nftClonableBridge.methods.estimateSendTokensFee(ethereumId, NextNFTInfo.address, parseInt(nft.token_id), false, adapterParams).call().then(feeInfo => {
+      const endpointFee = new BigNumber(feeInfo.nativeFee);//.multipliedBy(2);
+      console.log(adapterParams, '0x' + endpointFee.toString(16));
+      nftClonableBridge.methods.traverseChains(ethereumId, NextNFTInfo.address, parseInt(nft.token_id), adapterParams).send({from: account, value: '0x' + endpointFee.toString(16)})
+      .on('transactionHash', function(hash){
+        console.log(hash);
+      })
+      .on('receipt', function(receipt){
+        console.log(receipt);
+        setIsPending(false);
+        setTraverseChainVisible(false);
+      })
+      .on('error', function(error, receipt) { 
+        console.log(error, receipt);
+        setIsPending(false);
+      });
+    })
   }
 
   const pullUpNFTValue = () => {
@@ -701,6 +778,11 @@ function NFTBalance() {
       message.warning('Can NOT select the same chain to tranverse.');
     } else {
       setDestChain(v);
+      // const peerChainId = getChainIdFromEndpointId(v);
+      // const peerContractAddr = NFTClonableBridgeInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][peerChainId];
+      // layerZeroEndpoint.methods.hasStoredPayload(parseInt(v), peerContractAddr).call().then(hasStoredPayload => {
+      //   setHasStoredPayload(hasStoredPayload);
+      // });
     }
   }
 
@@ -788,12 +870,13 @@ function NFTBalance() {
         <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={10} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
         <Skeleton  active loading={isLoadingNext}>
           {AllNFTInfos != null && AllNFTInfos.map((nft, index) => {
+              console.log(nft)
               const bMine = account != null && nft.owner_of.toLowerCase() === account.toLowerCase();
               if (onlyMe && !bMine) return ''; 
               return (
                 <Card
                   hoverable
-                  actions={bMine ? [                    
+                  actions={bMine ? (isEthereum() ? [                    
                     <Tooltip title="Transfer NFT to another account">
                       <SendOutlined onClick={() => handleTransferClick(nft)}/>
                     </Tooltip>,         
@@ -803,12 +886,19 @@ function NFTBalance() {
                     <Tooltip title="Burn and Refund">
                       <FireOutlined onClick={() => burnNFTAndRefund(nft)} />
                     </Tooltip>, 
-                  ] : [      
+                  ] : [
+                    <Tooltip title="Transfer NFT to another account">
+                      <SendOutlined onClick={() => handleTransferClick(nft)}/>
+                    </Tooltip>,         
+                    <Tooltip title="Return cloned NFT to ethereum">
+                      <RollbackOutlined onClick={() => returnNFT2Ethereum(nft)} />
+                    </Tooltip>, 
+                  ]) : [      
                   ]}
                   style={{ width: 300, border: "2px solid #e7eaf3" }}
                   cover={
                     <Image
-                      preview={false}
+                      preview={true}
                       src={nft.token_uri}
                       fallback="data:image/png;base64,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"
                       alt=""
@@ -817,9 +907,12 @@ function NFTBalance() {
                   }
                   key={index}
                 >
-                  <Meta title={'NEXT NFT #' + nft.token_id} 
+                  <Meta title={'NEXT NFT ' + (isEthereum() ? '#' : 'Cloned #') + nft.token_id} 
                     description={
-                    <div style={styles.desc}>                      
+                    <div style={styles.desc}>
+                      {
+                        nft.clonedChainIds == null ? '' : <div>Cloned NFT: {nft.clonedChainIds.number > 0 ? getChainNames(nft.clonedChainIds.chainIds) : 'None'}</div>
+                      }             
                       <Address avatar='left' size={6} copyable style={{ fontSize: "20px" }} address={nft.owner_of}/>
                     </div>
                     } />
@@ -841,12 +934,12 @@ function NFTBalance() {
       </Modal>
 
       <Modal
-        title={`Traverse ${NextNFTInfo?.name || "NFT"} to another chain`}
+        title={`Clone ${NextNFTInfo?.name || "NFT"} to another chain`}
         visible={traverseChainVisible}
         onCancel={() => setTraverseChainVisible(false)}
         onOk={() => traverseChains()}
         confirmLoading={isPending}
-        okText="Send"
+        okText="Clone"
       >
         <div style={{ width: '100%', height: 20, marginButtom: '20px' }}>
           Please select the destination chain
@@ -858,6 +951,13 @@ function NFTBalance() {
         >
           {IsMainnet ? MainChains : TestChains}
         </Select>
+        {
+          !hasStoredPayload ? '' : 
+                            <div style={{ width: '100%', height: 20, marginButtom: '20px' }}>
+                              The bridge has been blocked because of failed transaction.
+                              <Button type='primary' loading={isPending} onClick={() => retryPayload()}>Retry Payload</Button>
+                            </div>
+        }
       </Modal>
 
       {/* <Modal
@@ -879,7 +979,7 @@ function NFTBalance() {
         onCancel={() => setLoadNFTVisible(false)}
         onOk={() => loadNFTFromEthereum()}
         confirmLoading={isPending}
-        okText="Confirm"
+        okText="Load"
       >
         <Input style={{width: '100%'}} addonBefore="NFT Address" onChange={(v) => changeNFTAddressOnEth(v)}/>
         <div style={{width: '100%', marginTop: '10px'}}>
@@ -995,7 +1095,7 @@ function NFTBalance() {
           </Skeleton>
         </div>
         <div style={{ width: '100%', height: 20, marginTop: '20px' }}>
-          Step 2: select or input your favorite words which will be merged with the selected image above
+          Step 2 (Optional): select or input your favorite words which will be merged with the selected image above
         </div>
         <Select mode="tags" 
           tokenSeparators={[',']}
@@ -1006,7 +1106,7 @@ function NFTBalance() {
           {Words}
         </Select>
         <div style={{ width: '100%', height: 20, marginTop: '20px' }}>
-          Step 3: import local images or load NFT images which will be merged with the selected image above
+          Step 3 (Optional): import local images or load NFT images which will be merged with the selected image above
         </div>
         <div style={{ marginTop: '10px', marginButtom: '10px' }}>
           <input type="file" multiple ref={localImgFiles} style={{ display: 'none' }} onChange={(e) => onLocalImagesChange(e)} />  
@@ -1035,9 +1135,9 @@ function NFTBalance() {
           </div>     
           <div style={styles.threshold}>
             <div style={{width: '20%'}}>Shadow Opacity</div>
-            <Slider style={{width: '80%'}} range={false} defaultValue={20} tipFormatter={value => `${value}%`} onAfterChange={v => changeShadowOpacity(v)}/>
+            <Slider style={{width: '80%'}} range={false} defaultValue={shadowOpacity} tipFormatter={value => `${value}%`} onAfterChange={v => changeShadowOpacity(v)}/>
           </div>    
-          <Button disabled={!generateOver} type='primary' onClick={() => relayoutNFT()}>Re-layout</Button>
+          <Button disabled={!generateOver} type='primary' onClick={() => relayoutNFT()}>Generate / Re-layout</Button>
         </div>
       </Modal>
       

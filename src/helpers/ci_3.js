@@ -6,7 +6,7 @@ var CI = (function() {
 	var setting = {
 		async: false,	// 异步模式
 		workerJs: null,	// worker线程js
-		random: false,	// 随机展现列表中的词语，为true时越靠前的词语优先级越高
+		random: true,	// 随机展现列表中的词语，为true时越靠前的词语优先级越高
 		orientation: false,	// 根据meta信息调整图片方向
 		minWidth: 150,
 		minHeight: 150,
