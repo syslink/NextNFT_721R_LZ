@@ -4,8 +4,10 @@
         "testnet": {
             "0x4": "0x7526c1F18ec6934D0a3171AB1eB0Df69245b28E7",
             "0x61": "0x8525BF38499dD19589e493224cC7A0294e5240A8",
-            "0x13881": "0x927314c47CeD94f54bA33A8597448f4C6827eE9c",
-            "0xa869": "0x927314c47CeD94f54bA33A8597448f4C6827eE9c"
+            "0x13881": "0xE49Ad7209d799Ae33c053D11F822000cA5ca8F7A",
+            "0xa869": "0xE49Ad7209d799Ae33c053D11F822000cA5ca8F7A",
+            "0x66eeb": "0xE49Ad7209d799Ae33c053D11F822000cA5ca8F7A",
+            "0x45": "0xE49Ad7209d799Ae33c053D11F822000cA5ca8F7A"
         },
         "mainnet": {
             "0x1": "",

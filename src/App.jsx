@@ -22,6 +22,8 @@ import Ramper from "components/Ramper";
 import MenuItems from "./components/MenuItems";
 import robot from './asset/robot.png';
 import mintAll from './asset/abi/mintAll.json';
+import LayerZeroEndpointInfo from './asset/abi/layerZeroEndpoint.json';
+import NFTClonableBridgeInfo from './asset/abi/NFTClonableBridge.json';
 import nsba from './asset/abi/nsba.json';
 
 const { Header, Footer } = Layout;
@@ -72,6 +74,18 @@ const styles = {
 const App = ({ isServerInfo }) => {
   const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading, account, web3, chainId } = useMoralis();
 
+  const IsMainnet = window.location.origin.indexOf("test") < 0 && window.location.origin.indexOf("localhost") < 0;
+  const isEthereum = () => {
+    return chainId === '0x1' || chainId === '0x4';
+  }
+
+  const getEthEndpointId = () => {
+    return IsMainnet ? 1 : 10001;
+  }
+
+  const layerZeroEndpointAddress = LayerZeroEndpointInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][chainId];   
+  LayerZeroEndpointInfo.address = layerZeroEndpointAddress; 
+
   useEffect(() => {
     const connectorId = window.localStorage.getItem("connectorId");
     if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3({ provider: connectorId });
@@ -92,6 +106,20 @@ const App = ({ isServerInfo }) => {
     })
     .on('error', function(error, receipt) { 
       console.log(error, receipt);
+    });
+  }
+
+  const checkBridge = () => {
+    const layerZeroEndpoint = new web3.eth.Contract(LayerZeroEndpointInfo.abi, LayerZeroEndpointInfo.address);
+    const ethEndpointId = getEthEndpointId();
+    const peerAddr = NFTClonableBridgeInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][ethEndpointId === 1 ? '0x1' : '0x4'];
+    console.log(ethEndpointId, peerAddr)
+    layerZeroEndpoint.methods.hasStoredPayload(ethEndpointId, peerAddr).call().then(result => {
+      if (result) {
+        message.warning("The pathway of message from ethereum to current network is blocked.");
+      } else {
+        message.success("The pathway of message from ethereum to current network is smooth.");
+      }
     });
   }
 
@@ -139,6 +167,7 @@ const App = ({ isServerInfo }) => {
           <MenuItems />
           <div style={styles.headerRight}>
             {chainId === '0x4' ? <Button type='primary' onClick={() => claimNFT()}>Claim NFTs for testing</Button> : ''}
+            {isEthereum() ? "" :  <Button type='primary' onClick={() => checkBridge()}>Check Bridge</Button>}
             <Chains />
             {/* <TokenPric
               address="0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
@@ -146,7 +175,7 @@ const App = ({ isServerInfo }) => {
               image="https://cloudflare-ipfs.com/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg/"
               size="40px"
             /> */}
-            <NativeBalance />
+            {/* <NativeBalance /> */}
             <Account />
           </div>
         </Header>

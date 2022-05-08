@@ -47,7 +47,7 @@ const menuItems = [
     icon: <ETHLogo />,
   },
   {
-    key: "0xc8",
+    key: "0x66eeb",
     value: "Abitrum Testnet",
     icon: <ETHLogo />,
   },
@@ -90,7 +90,7 @@ function Chains() {
 
   const IsMainnet = window.location.origin.indexOf("test") < 0 && window.location.origin.indexOf("localhost") < 0;
   const filterChains = {"mainnet": {'0x1': true, '0x0a': true, '0x38': true, '0x89': true,    '0xa4b1': true, '0xa86a': true}, 
-                        "testnet": {'0x4': true, '0x45': true, '0x61': true, '0x13881': true, '0xc8': true,   '0xa869': true}}
+                        "testnet": {'0x4': true, '0x45': true, '0x61': true, '0x13881': true, '0x66eeb': true,   '0xa869': true}}
 
   useEffect(() => {
     if (!chainId) return null;

@@ -3,11 +3,11 @@
 	"multiAddressess": {
         "testnet": {
             "0x4": "0x2ae55F97c23c5D23ae855A53F5c391dA04A2C821",
-            "0x61": "0x566918fa188FA82887ef259AB7e9fF8504123980",
-            "0x13881": "0x93f54D755A063cE7bB9e6Ac47Eccc8e33411d706",
-            "0xa869": "0xf69186dfBa60DdB133E91E9A4B5673624293d8F8",
-            "0x66eeb": "0x4D747149A57923Beb89f22E6B7B97f7D8c087A00",
-            "0x45": "0x72aB53a133b27Fa428ca7Dc263080807AfEc91b5"
+            "0x61": "0x566918fa188FA82887ef259AB7e9fF8504123980",     
+            "0x13881": "0x18B04C2Be8AceccB79CFeAab2f0bdd7B8749F4c2", 
+            "0xa869": "0x18B04C2Be8AceccB79CFeAab2f0bdd7B8749F4c2",
+            "0x66eeb": "0x18B04C2Be8AceccB79CFeAab2f0bdd7B8749F4c2",
+            "0x45": "0x18B04C2Be8AceccB79CFeAab2f0bdd7B8749F4c2"
         },
         "mainnet": {
             "0x1": "",
