@@ -74,6 +74,9 @@ const styles = {
 const App = ({ isServerInfo }) => {
   const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading, account, web3, chainId } = useMoralis();
 
+  const chainMap = {'0x1':'1',     "0x38":"2",     "0xa86a":"6",     "0x89":"9",        "0xa4b1":"10",      "0x0a":"11", 
+                    '0x4':'10001', "0x61":"10002", "0xa869":"10006", "0x13881":"10009", "0x66eeb": "10010", "0x45": "10011"} 
+
   const IsMainnet = window.location.origin.indexOf("test") < 0 && window.location.origin.indexOf("localhost") < 0;
   const isEthereum = () => {
     return chainId === '0x1' || chainId === '0x4';
@@ -81,6 +84,12 @@ const App = ({ isServerInfo }) => {
 
   const getEthEndpointId = () => {
     return IsMainnet ? 1 : 10001;
+  }
+
+  if (chainId != null) {
+    if ((IsMainnet && parseInt(chainMap[chainId]) > 11) || (!IsMainnet && parseInt(chainMap[chainId]) < 10001)) {
+      message.warning(IsMainnet ? "Please connect mainnet" : "Please connect testnet");
+    }
   }
 
   const layerZeroEndpointAddress = LayerZeroEndpointInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][chainId];   

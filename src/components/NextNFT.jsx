@@ -160,8 +160,8 @@ function NFTBalance() {
                   <Option key='10'>Rinkeby</Option>,
                   <Option key='11'>Optimism</Option>];
                   // <Option key='12'>Fantom</Option>];   
-  const chainMap = {'0x1':'1',     "0x38":"2",     "0xa86a":"6",     "0x89":"9",
-                    '0x4':'10001', "0x61":"10002", "0xa869":"10006", "0x13881":"10009"}    
+  const chainMap = {'0x1':'1',     "0x38":"2",     "0xa86a":"6",     "0x89":"9",        "0xa4b1":"10",      "0x0a":"11", 
+                    '0x4':'10001', "0x61":"10002", "0xa869":"10006", "0x13881":"10009", "0x66eeb": "10010", "0x45": "10011"}    
 
   const nextNFTAddress = NextNFTInfo.multiAddressess[IsMainnet ? "mainnet" : "testnet"][chainId];   
   NextNFTInfo.address = nextNFTAddress;               
