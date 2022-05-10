@@ -867,7 +867,7 @@ function NFTBalance() {
         <Button style={{marginLeft: '10px'}} type='link' onClick={() => showRuleOfMintBurn()}>Rule of Next NFT</Button>
       </h1>
       <div style={styles.NFTs}>
-        <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={10} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
+        <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={9} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
         <Skeleton  active loading={isLoadingNext}>
           {AllNFTInfos != null && AllNFTInfos.map((nft, index) => {
               console.log(nft)

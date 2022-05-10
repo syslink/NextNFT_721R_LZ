@@ -53,12 +53,12 @@ const menuItems = [
   },
   {
     key: "0x38",
-    value: "Binance",
+    value: "BSC",
     icon: <BSCLogo />,
   },
   {
     key: "0x61",
-    value: "Smart Chain Testnet",
+    value: "BSC Testnet",
     icon: <BSCLogo />,
   },
   {
@@ -78,7 +78,7 @@ const menuItems = [
   },
   {
     key: "0xa869",
-    value: "Avalanche Testnet",
+    value: "Avalanche Fuji Testnet",
     icon: <AvaxLogo />,
   },
 ];

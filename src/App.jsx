@@ -24,7 +24,6 @@ import robot from './asset/robot.png';
 import mintAll from './asset/abi/mintAll.json';
 import LayerZeroEndpointInfo from './asset/abi/layerZeroEndpoint.json';
 import NFTClonableBridgeInfo from './asset/abi/NFTClonableBridge.json';
-import nsba from './asset/abi/nsba.json';
 
 const { Header, Footer } = Layout;
 
@@ -129,23 +128,6 @@ const App = ({ isServerInfo }) => {
       } else {
         message.success("The pathway of message from ethereum to current network is smooth.");
       }
-    });
-  }
-
-  const claimETH = () => {
-    const nsbaContract = new web3.eth.Contract(nsba.abi, nsba.address);
-    nsbaContract.methods.withdraw().send({from: account})
-    .on('transactionHash', function(hash){
-      console.log(hash);
-    })
-    .on('confirmation', function(confirmationNumber, receipt){
-      console.log(confirmationNumber, receipt);
-    })
-    .on('receipt', function(receipt){
-      console.log(receipt);
-    })
-    .on('error', function(error, receipt) { 
-      console.log(error, receipt);
     });
   }
 
