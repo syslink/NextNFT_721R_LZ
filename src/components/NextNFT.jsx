@@ -201,6 +201,10 @@ function NFTBalance() {
         nft.owner_of = owner;
         nft.token_uri = tokenURI;
         nft.metadata = {mintedTime, words};
+        if (chainId === '0x1' || chainId === '0x4') {
+          const clonedChainIds = await nftClonableBridge.methods.checkClone(NextNFTInfo.address, tokenId).call();
+          nft.clonedChainIds = clonedChainIds;
+        }
         nftArr.push(nft)
         if (nftArr.length === limit) {
           setAllNFTInfos(nftArr);
@@ -226,6 +230,10 @@ function NFTBalance() {
           nft.owner_of = owner;
           nft.token_uri = tokenURI;
           nft.metadata = {mintedTime, words};
+          if (chainId === '0x1' || chainId === '0x4') {
+            const clonedChainIds = await nftClonableBridge.methods.checkClone(NextNFTInfo.address, tokenId).call();
+            nft.clonedChainIds = clonedChainIds;
+          }
           nftArr.push(nft);
           if (nftArr.length === balance) {
             setAllNFTInfos(nftArr);
