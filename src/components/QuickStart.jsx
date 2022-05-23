@@ -78,10 +78,10 @@ export default function QuickStart({ isServerInfo }) {
             (2) Only can mint NFT on Ethereum. And in same round, when burn NFT, the costs spent on mint will be refunded.
             </Text><p/>
             <Text style={styles.text}>
-            (3) Can clone NFT from <Text strong>Ethereum</Text> to <Text strong>BSC/Polygon/Avalanch</Text>.
+            (3) Can clone NFT from <Text strong>Ethereum</Text> to <Text strong>BSC/Polygon/Avalanch/Arbitrum/Optimism</Text>.
             </Text><p/>
             <Text style={styles.text}>
-            (4) If an NFT has clone on other chains, it can't be transferred to another EOA, unless all clones are sent back to Ethereum.
+            (4) If an NFT has cloned NFT on other chains, it can't be transferred to another EOA, unless all cloned NFTs are sent back to Ethereum.
             </Text><p/>
             <Text style={styles.text}>
             (5) Total supply of Next NFT is <Text strong>10240</Text>.

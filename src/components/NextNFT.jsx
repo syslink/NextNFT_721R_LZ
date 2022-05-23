@@ -298,7 +298,7 @@ function NFTBalance() {
             if (chainId != null) {
               setIsLoadingNext(true);
               const offset = parseInt(nftNumber);
-              var limit = 10;
+              var limit = 9;
               if (offset - limit < 0) {
                 limit = offset;
               }
@@ -308,6 +308,7 @@ function NFTBalance() {
               }
               console.log(nftNumber, offset, limit);
               const nftArr = [];
+              var tokenURIs = '';
               for (var i = offset - 1; i >= offset - limit; i--) {
                 nextNFTContract.methods.tokenByIndex(i).call().then(async (tokenId) => {
                   const nft = {token_id: tokenId};
@@ -323,8 +324,10 @@ function NFTBalance() {
                     const clonedChainIds = await nftClonableBridge.methods.checkClone(NextNFTInfo.address, tokenId).call();
                     nft.clonedChainIds = clonedChainIds;
                   }
-                  nftArr.push(nft)
+                  nftArr.push(nft);
+                  tokenURIs += "'" + tokenURI + "',"
                   if (nftArr.length === limit) {
+                    console.log(tokenURIs);
                     setAllNFTInfos(nftArr);
                     setIsLoadingNext(false);
                   }
@@ -878,7 +881,6 @@ function NFTBalance() {
         <Pagination style={{width: '100%', textAlign: 'right'}} defaultCurrent={1} defaultPageSize={9} total={totalSupply} onChange={(pageV, pageSizeV) => changePage(pageV, pageSizeV)}/>
         <Skeleton  active loading={isLoadingNext}>
           {AllNFTInfos != null && AllNFTInfos.map((nft, index) => {
-              console.log(nft)
               const bMine = account != null && nft.owner_of.toLowerCase() === account.toLowerCase();
               if (onlyMe && !bMine) return ''; 
               return (
