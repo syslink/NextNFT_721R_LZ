@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>three.js css2d - label</title>
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			.label {
+				color: #FFF;
+				font-family: sans-serif;
+				padding: 2px;
+				background: rgba( 0, 0, 0, .6 );
+			}
+		</style>
+	</head>
+	<body>
+		<div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> css2d - label</div>
+
+		<!-- Import maps polyfill -->
+		<!-- Remove this when import maps will be widely supported -->
+		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+
+			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+			import { CSS2DRenderer, CSS2DObject } from './jsm/renderers/CSS2DRenderer.js';
+
+			import { GUI } from './jsm/libs/lil-gui.module.min.js';
+
+			let gui;
+
+			let camera, scene, renderer, labelRenderer;
+
+			const layers = {
+
+				'Toggle Name': function () {
+
+					camera.layers.toggle( 0 );
+
+				},
+				'Toggle Mass': function () {
+
+					camera.layers.toggle( 1 );
+
+				},
+				'Enable All': function () {
+
+					camera.layers.enableAll();
+
+				},
+
+				'Disable All': function () {
+
+					camera.layers.disableAll();
+
+				}
+
+			}
+
+			var Colors = {
+				red:0xf25346,
+				white:0xd8d0d1,
+				brown:0x59332e,
+				brownDark:0x23190f,
+				pink:0xF5986E,
+				yellow:0xf4ce93,
+				blue:0x68c3c0,
+
+			};
+
+			var createAirPlane = function() {
+	
+				var mesh = new THREE.Object3D();
+				
+				// Create the cabin
+				var geomCabin = new THREE.CylinderGeometry(38,15,80,4);
+				var matCabin = new THREE.MeshPhongMaterial({color:Colors.red, shading:THREE.FlatShading});
+
+				var cabin = new THREE.Mesh(geomCabin, matCabin);
+				cabin.castShadow = true;
+				cabin.receiveShadow = true;
+				cabin.rotateX(-Math.PI/4);
+				cabin.rotateZ(-Math.PI/2);
+				mesh.add(cabin);
+				
+				// Create the engine
+				var geomEngine = new THREE.BoxGeometry(20,50,50,1,1,1);
+				var matEngine = new THREE.MeshPhongMaterial({color:Colors.white, shading:THREE.FlatShading});
+				var engine = new THREE.Mesh(geomEngine, matEngine);
+				engine.position.x = 40;
+				engine.castShadow = true;
+				engine.receiveShadow = true;
+				mesh.add(engine);
+				
+				// Create the tail
+				var geomTailPlane = new THREE.BoxGeometry(15,20,5,1,1,1);
+				var matTailPlane = new THREE.MeshPhongMaterial({color:Colors.red, shading:THREE.FlatShading});
+				var tailPlane = new THREE.Mesh(geomTailPlane, matTailPlane);
+				tailPlane.position.set(-35,15,0);
+				tailPlane.castShadow = true;
+				tailPlane.receiveShadow = true;
+				mesh.add(tailPlane);
+				
+				// Create the wing
+				var geomSideWing = new THREE.BoxGeometry(40,8,150,1,1,1);
+				var matSideWing = new THREE.MeshPhongMaterial({color:Colors.red, shading:THREE.FlatShading});
+				var sideWing = new THREE.Mesh(geomSideWing, matSideWing);
+				sideWing.castShadow = true;
+				sideWing.receiveShadow = true;
+				mesh.add(sideWing);
+				
+				// propeller
+				var geomPropeller = new THREE.BoxGeometry(20,10,10,1,1,1);
+				var matPropeller = new THREE.MeshPhongMaterial({color:Colors.brown, shading:THREE.FlatShading});
+				var propeller = new THREE.Mesh(geomPropeller, matPropeller);
+				propeller.castShadow = true;
+				propeller.receiveShadow = true;
+				
+				// blades
+				var geomBlade = new THREE.BoxGeometry(1,100,20,1,1,1);
+				var matBlade = new THREE.MeshPhongMaterial({color:Colors.brownDark, shading:THREE.FlatShading});
+				
+				var blade = new THREE.Mesh(geomBlade, matBlade);
+				blade.position.set(8,0,0);
+				blade.castShadow = true;
+				blade.receiveShadow = true;
+				propeller.add(blade);
+				propeller.position.set(50,0,0);
+				mesh.add(propeller);
+				mesh.propeller = propeller;	
+
+				pilot = new Pilot();
+				//pilot.mesh.scale.set(0.02, 0.02, 0.02);
+				pilot.mesh.position.set(0, 35, 0);
+				mesh.add(pilot.mesh);
+				mesh.scale.set(.01,.01,.01);
+				return mesh;
+			};
+
+			var Pilot = function(){
+				var mesh = new THREE.Object3D();
+				mesh.name = "pilot";
+				
+				// angleHairs is a property used to animate the hair later 
+				this.angleHairs=0;
+
+				// Body of the pilot
+				var bodyGeom = new THREE.BoxGeometry(15,15,15);
+				var bodyMat = new THREE.MeshPhongMaterial({color:Colors.brown, shading:THREE.FlatShading});
+				var body = new THREE.Mesh(bodyGeom, bodyMat);
+				body.position.set(2,-12,0);
+				mesh.add(body);
+
+				// Face of the pilot
+				var faceGeom = new THREE.BoxGeometry(10,10,10);
+				var faceMat = new THREE.MeshLambertMaterial({color:Colors.pink});
+				var face = new THREE.Mesh(faceGeom, faceMat);
+				mesh.add(face);
+
+				// Hair element
+				var hairGeom = new THREE.BoxGeometry(4,4,4);
+				var hairMat = new THREE.MeshLambertMaterial({color:Colors.brown});
+				var hair = new THREE.Mesh(hairGeom, hairMat);
+				// Align the shape of the hair to its bottom boundary, that will make it easier to scale.
+				//hair.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,2,0));
+				
+				// create a container for the hair
+				var hairs = new THREE.Object3D();
+
+				// create a container for the hairs at the top 
+				// of the head (the ones that will be animated)
+				this.hairsTop = new THREE.Object3D();
+
+				// create the hairs at the top of the head 
+				// and position them on a 3 x 4 grid
+				for (var i=0; i<12; i++){
+					var h = hair.clone();
+					var col = i%3;
+					var row = Math.floor(i/3);
+					var startPosZ = -4;
+					var startPosX = -4;
+					h.position.set(startPosX + row*4, 0, startPosZ + col*4);
+					this.hairsTop.add(h);
+				}
+				hairs.add(this.hairsTop);
+
+				// create the hairs at the side of the face
+				var hairSideGeom = new THREE.BoxGeometry(12,4,2);
+				//hairSideGeom.applyMatrix(new THREE.Matrix4().makeTranslation(-6,0,0));
+				var hairSideR = new THREE.Mesh(hairSideGeom, hairMat);
+				var hairSideL = hairSideR.clone();
+				hairSideR.position.set(8,-2,6);
+				hairSideL.position.set(8,-2,-6);
+				hairs.add(hairSideR);
+				hairs.add(hairSideL);
+
+				// create the hairs at the back of the head
+				var hairBackGeom = new THREE.BoxGeometry(2,8,10);
+				var hairBack = new THREE.Mesh(hairBackGeom, hairMat);
+				hairBack.position.set(-1,-4,0)
+				hairs.add(hairBack);
+				hairs.position.set(-5,5,0);
+
+				mesh.add(hairs);
+
+				var glassGeom = new THREE.BoxGeometry(5,5,5);
+				var glassMat = new THREE.MeshLambertMaterial({color:Colors.brown});
+				var glassR = new THREE.Mesh(glassGeom,glassMat);
+				glassR.position.set(6,0,3);
+				var glassL = glassR.clone();
+				glassL.position.z = -glassR.position.z
+
+				var glassAGeom = new THREE.BoxGeometry(11,1,11);
+				var glassA = new THREE.Mesh(glassAGeom, glassMat);
+				mesh.add(glassR);
+				mesh.add(glassL);
+				mesh.add(glassA);
+
+				var earGeom = new THREE.BoxGeometry(2,3,2);
+				var earL = new THREE.Mesh(earGeom,faceMat);
+				earL.position.set(0,0,-6);
+				var earR = earL.clone();
+				earR.position.set(0,0,6);
+				mesh.add(earL);
+				mesh.add(earR);
+				this.mesh = mesh;
+			}
+
+			// move the hair
+			Pilot.prototype.updateHairs = function(){
+				
+				// get the hair
+				var hairs = this.hairsTop.children;
+
+				// update them according to the angle angleHairs
+				var l = hairs.length;
+				for (var i=0; i<l; i++){
+					var h = hairs[i];
+					// each hair element will scale on cyclical basis between 75% and 100% of its original size
+					h.scale.y = .75 + Math.cos(this.angleHairs+i/3)*.25;
+				}
+				// increment the angle for the next frame
+				this.angleHairs += 0.16;
+			}
+
+			const clock = new THREE.Clock();
+			const textureLoader = new THREE.TextureLoader();
+
+			let ethereum;
+			let arbitrum;
+			let optimism;
+
+			let bsc;
+			let polygon;
+			let avalanch;
+
+			var airplane;
+			var pilot;
+			
+			const EARTH_RADIUS = 4;
+			const MOON_RADIUS = 1;
+
+			const raycaster = new THREE.Raycaster();
+			const pointer = new THREE.Vector2();
+			var selectedObj;
+			const rotationMatrix = new THREE.Matrix4();
+			const targetQuaternion = new THREE.Quaternion();
+			var target;
+			var spherical;
+			var cone;
+
+
+			init();
+			animate();
+
+			function init() {
+				spherical = new THREE.Spherical();
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 200 );
+				camera.position.set( 10, 5, 20 );
+				camera.layers.enableAll();
+				camera.layers.toggle( 1 );
+
+				scene = new THREE.Scene();
+				
+				const hemisphereLight = new THREE.AmbientLight( 0x888888 )
+				const dirLight = new THREE.DirectionalLight( 0xffffff );
+				dirLight.position.set( 0, 1, 1 );
+				dirLight.layers.enableAll();
+
+				scene.add(hemisphereLight);
+				scene.add( dirLight );
+
+				const axesHelper = new THREE.AxesHelper( 15 );
+				axesHelper.layers.enableAll();
+				scene.add( axesHelper );
+
+				const ethGeometry = new THREE.SphereGeometry( EARTH_RADIUS, 16, 16 );
+				const ethMaterial = new THREE.MeshPhongMaterial( {
+					specular: 0x333333,
+					shininess: 5,
+					map: textureLoader.load( 'textures/planets/ethereum3.jpg' ),
+					specularMap: textureLoader.load( 'textures/planets/ethereum3.jpg' ),
+					// normalMap: textureLoader.load( 'textures/planets/ethereum3.jpg' ),
+					normalScale: new THREE.Vector2( 0.85, 0.85 )
+				} );
+				ethereum = new THREE.Mesh( ethGeometry, ethMaterial );
+				ethereum.name = 'ethereum';
+				ethereum.rotateY(Math.PI * -0.35);
+				scene.add( ethereum );
+
+				const bscGeometry = new THREE.SphereGeometry( EARTH_RADIUS * 0.5, 32, 32 );
+				const bscMaterial = new THREE.MeshPhongMaterial( {
+					specular: 0x333333,
+					shininess: 5,
+					map: textureLoader.load( 'textures/planets/bsc.png' ),
+					normalScale: new THREE.Vector2( 0.5, 0.5 )
+				} );
+				bsc = new THREE.Mesh( bscGeometry, bscMaterial );
+				bsc.name = 'bsc';
+				scene.add( bsc );
+
+				const polygonGeometry = new THREE.SphereGeometry( EARTH_RADIUS * 0.5, 32, 32 );
+				const polygonMaterial = new THREE.MeshPhongMaterial( {
+					specular: 0x333333,
+					shininess: 5,
+					map: textureLoader.load( 'textures/planets/polygon.jpg' ),
+					specularMap: textureLoader.load( 'textures/planets/polygon.jpg' ),
+					normalScale: new THREE.Vector2( 0.5, 0.5 )
+				} );
+				polygon = new THREE.Mesh( polygonGeometry, polygonMaterial );
+				polygon.name = 'polygon';
+				scene.add( polygon );
+				
+				const avalanchGeometry = new THREE.SphereGeometry( EARTH_RADIUS * 0.5, 32, 32 );
+				const avalanchMaterial = new THREE.MeshPhongMaterial( {
+					specular: 0x333333,
+					shininess: 5,
+					map: textureLoader.load( 'textures/planets/avalanche.png' ),
+					normalScale: new THREE.Vector2( 0.5, 0.5 )
+				} );
+				avalanch = new THREE.Mesh( avalanchGeometry, avalanchMaterial );
+				avalanch.name = 'avalanche';
+				scene.add( avalanch );
+
+				const arbitrumGeometry = new THREE.SphereGeometry( MOON_RADIUS, 16, 16 );
+				const arbitrumnMaterial = new THREE.MeshPhongMaterial( {
+					shininess: 5,
+					map: textureLoader.load( 'textures/planets/arbitrum.png' )
+				} );
+				arbitrum = new THREE.Mesh( arbitrumGeometry, arbitrumnMaterial );
+				arbitrum.name = 'arbitrum';
+				scene.add( arbitrum );
+				
+				const optimismGeometry = new THREE.SphereGeometry( MOON_RADIUS * 0.8, 16, 16 );
+				const optimismMaterial = new THREE.MeshPhongMaterial( {
+					shininess: 5,
+					map: textureLoader.load( 'textures/planets/optimism.jpg' ),
+					specularMap: textureLoader.load( 'textures/planets/optimism.jpg' ),
+					normalMap: textureLoader.load( 'textures/planets/optimism.jpg' )
+				} );
+				optimism = new THREE.Mesh( optimismGeometry, optimismMaterial );
+				optimism.name = 'optimism';
+				scene.add( optimism );
+				//
+
+				ethereum.layers.enableAll();
+				arbitrum.layers.enableAll();
+				optimism.layers.enableAll();
+			
+				bsc.layers.enableAll();
+				avalanch.layers.enableAll();
+				polygon.layers.enableAll();
+
+				// const earthDiv = document.createElement( 'div' );
+				// earthDiv.className = 'label';
+				// earthDiv.innerHTML = 'Ethereum';
+				// earthDiv.style.marginTop = '1em';
+				// earthDiv.style.textAlign = 'center';
+				// const earthLabel = new CSS2DObject( earthDiv );
+				// earthLabel.position.set( 0, EARTH_RADIUS, 0 );
+				// //ethereum.add( earthLabel );
+				// earthLabel.layers.set( 0 );
+
+				// const bscDiv = document.createElement( 'div' );
+				// bscDiv.className = 'label';
+				// bscDiv.innerHTML = 'BSC';
+				// bscDiv.style.marginTop = '10em';
+				// bscDiv.style.textAlign = 'center';
+				// const bscLabel = new CSS2DObject( bscDiv );
+				// bscLabel.position.set( 0, EARTH_RADIUS, 0 );
+				// //bsc.add( bscLabel );
+				// bscLabel.layers.set( 0 );
+			
+
+				// const avaxDiv = document.createElement( 'div' );
+				// avaxDiv.className = 'label';
+				// avaxDiv.innerHTML = 'Avalanch';
+				// avaxDiv.style.marginTop = '6em';
+				// avaxDiv.style.textAlign = 'center';
+				// const avaxLabel = new CSS2DObject( avaxDiv );
+				// avaxLabel.position.set( 0, EARTH_RADIUS, 0 );
+				// //avalanch.add( avaxLabel );
+				// avaxLabel.layers.set( 0 );
+				
+				// const polygonDiv = document.createElement( 'div' );
+				// polygonDiv.className = 'label';
+				// polygonDiv.innerHTML = 'Polygon';
+				// polygonDiv.style.marginTop = '6em';
+				// polygonDiv.style.textAlign = 'center';
+				// const polygonLabel = new CSS2DObject( polygonDiv );
+				// polygonLabel.position.set( 0, EARTH_RADIUS, 0 );
+				// //polygon.add( polygonLabel );
+				// polygonLabel.layers.set( 0 );
+
+				// const moonDiv = document.createElement( 'div' );
+				// moonDiv.className = 'label';
+				// moonDiv.innerHTML = 'Arbitrum';
+				// moonDiv.style.marginTop = '-1em';
+				// moonDiv.style.textAlign = 'center';
+				// const moonLabel = new CSS2DObject( moonDiv );
+				// moonLabel.position.set( 0, MOON_RADIUS, 0 );
+				// //arbitrum.add( moonLabel );
+				// moonLabel.layers.set( 0 );
+
+				// const optimsimDiv = document.createElement( 'div' );
+				// optimsimDiv.className = 'label';
+				// optimsimDiv.innerHTML = 'Optimism';
+				// optimsimDiv.style.marginTop = '0em';
+				// optimsimDiv.style.textAlign = 'center';
+				// const optimsimLabel = new CSS2DObject( optimsimDiv );
+				// optimsimLabel.position.set( 0, MOON_RADIUS, 0 );
+				// //optimism.add( optimsimLabel );
+				// optimsimLabel.layers.set( 0 );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true });
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				labelRenderer = new CSS2DRenderer();
+				labelRenderer.setSize( window.innerWidth, window.innerHeight );
+				labelRenderer.domElement.style.position = 'absolute';
+				labelRenderer.domElement.style.top = '0px';
+				document.body.appendChild( labelRenderer.domElement );
+
+				const controls = new OrbitControls( camera, labelRenderer.domElement );
+				controls.minDistance = 5;
+				controls.maxDistance = 100;
+				
+				airplane = createAirPlane();
+				airplane.position.set( 0, EARTH_RADIUS + 0.5, 0);
+				//airplane.rotateY(-0.5 * Math.PI);
+				scene.add(airplane);
+
+				window.addEventListener( 'resize', onWindowResize );
+				
+				window.addEventListener('click', function(event) {
+					// 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)
+					pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+					// 通过摄像机和鼠标位置更新射线
+					raycaster.setFromCamera( pointer, camera );
+
+					// 计算物体和射线的焦点
+					const intersects = raycaster.intersectObjects( scene.children );
+
+					for ( let i = 0; i < intersects.length; i ++ ) {
+						if (intersects[i].object.name != '') {
+							console.log(intersects[ i ]);
+							selectedObj = intersects[i].object;
+							startPosIndex = 0;
+							break;
+						}
+					}
+				});
+
+				initGui();
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				labelRenderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			
+			var targetCurve;
+			var curvePoints;
+			var startPosIndex = 0;
+			var maxIndex = 100;
+			var lastTarget = new THREE.Vector3();
+			var lastSelectedObj;
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				const elapsed = clock.getElapsedTime();
+
+				ethereum.rotateY(0.002 * Math.PI);
+				arbitrum.rotateY(0.004 * Math.PI);
+				optimism.rotateY(0.004 * Math.PI);
+				bsc.rotateY(0.003 * Math.PI);
+				polygon.rotateY(0.003 * Math.PI);
+				avalanch.rotateY(0.003 * Math.PI);
+
+
+				const arbitrumPos = new THREE.Vector3( Math.sin( elapsed ) * 7, 0, Math.cos( elapsed ) * 7 );
+				const optimismPos = new THREE.Vector3( Math.sin( elapsed ) * 5, 0, Math.cos( elapsed ) * 5 );
+				const bscPos = new THREE.Vector3(13, 0, -6);
+				const polygonPos = new THREE.Vector3(-17, -3, -3);
+				const avalanchePos = new THREE.Vector3(5, 0, -15);
+
+				arbitrum.position.set(arbitrumPos.x, arbitrumPos.y, arbitrumPos.z);
+				optimism.position.set(optimismPos.x, optimismPos.y, optimismPos.z);
+				bsc.position.set(bscPos.x, bscPos.y, bscPos.z);
+				polygon.position.set(polygonPos.x, polygonPos.y, polygonPos.z);
+				avalanch.position.set(avalanchePos.x, avalanchePos.y, avalanchePos.z);
+
+				airplane.propeller.rotation.x += 0.3;  // 螺旋桨自转				
+				pilot.updateHairs();
+
+				if (selectedObj != null) {
+					const targetPoint = new THREE.Vector3(selectedObj.position.x, selectedObj.position.y + selectedObj.geometry.parameters.radius + 0.3, selectedObj.position.z);
+					if (startPosIndex == maxIndex && lastSelectedObj == selectedObj) {
+						airplane.position.set(targetPoint.x, targetPoint.y, targetPoint.z);
+					} else {  
+						var isMoving = targetPoint.x != lastTarget.x || targetPoint.y != lastTarget.y || targetPoint.z != lastTarget.z;  // 移动中的卫星
+						lastTarget = targetPoint;
+						if (lastSelectedObj != selectedObj || isMoving) {
+							airplane.lookAt(targetPoint);
+							airplane.rotateY(-0.5 * Math.PI);	
+							targetCurve = new THREE.CatmullRomCurve3([airplane.position, targetPoint]);
+							curvePoints = targetCurve.getPoints( maxIndex );
+							
+							if (isMoving) {
+								startPosIndex++;
+							} else {
+								startPosIndex = 1;
+							}
+						}
+
+						if (startPosIndex > 0 && startPosIndex < maxIndex) {
+							if (isMoving) {
+								const index = startPosIndex > 20 ? 20 : startPosIndex;
+								airplane.position.set(curvePoints[index].x, curvePoints[index].y, curvePoints[index].z);
+							} else {
+								airplane.position.set(curvePoints[startPosIndex].x, curvePoints[startPosIndex].y, curvePoints[startPosIndex].z);
+								startPosIndex++;
+							}
+						}
+					}
+					lastSelectedObj = selectedObj;
+				}
+
+				renderer.render( scene, camera );
+				labelRenderer.render( scene, camera );
+
+			}
+
+			//
+
+			function initGui() {
+
+				gui = new GUI();
+
+				gui.add( layers, 'Toggle Name' );
+				gui.add( layers, 'Toggle Mass' );
+				gui.add( layers, 'Enable All' );
+				gui.add( layers, 'Disable All' );
+
+			}
+
+		</script>
+	</body>
+</html>
